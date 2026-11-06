@@ -18,9 +18,14 @@ export const CLOSE_CODES = {
  * Verbindet WebSocket-Verbindungen mit Räumen.
  *
  * Protokoll (JSON, Feld `type`):
- * - Client → Server: `join { code, name, token? }`, `leave`, `ping`
- * - Server → Client: `joined { you, token, room }`, `state { room, participants }`,
+ * - Client → Server: `join { code, name, token? }`, `leave`, `vote { value }`,
+ *   `reveal { round }`, `reset { round }`, `ping`
+ * - Server → Client: `joined { you, token, room }`,
+ *   `state { room, round, revealed, participants, yourVote, result }`,
  *   `left`, `error { code, message }`, `kicked { reason, message }`, `pong`
+ *
+ * Vor dem Aufdecken enthält `state` nur, **ob** jemand gewählt hat. Die Werte
+ * verlassen den Server erst nach `reveal`.
  */
 export class PokerHub {
   /** @type {Map<string, RoomSession>} Raum-ID → Sitzung */
@@ -110,6 +115,23 @@ export class PokerHub {
         case 'leave':
           this.#leave(ws);
           return true;
+        case 'vote': {
+          const { session, participant } = this.#requireBinding(ws);
+          const value = message.value === undefined ? null : message.value;
+          session.vote(participant, value);
+          this.#broadcast(session);
+          return true;
+        }
+        case 'reveal': {
+          const { session } = this.#requireBinding(ws);
+          if (session.reveal(message.round)) this.#broadcast(session);
+          return true;
+        }
+        case 'reset': {
+          const { session } = this.#requireBinding(ws);
+          if (session.reset(message.round)) this.#broadcast(session);
+          return true;
+        }
         default:
           return false;
       }
@@ -183,10 +205,14 @@ export class PokerHub {
     this.#broadcast(session);
   }
 
-  #leave(ws) {
+  #requireBinding(ws) {
     const binding = this.#bindings.get(ws);
     if (!binding) throw new PokerError('not-joined', 'Du bist in keinem Raum');
-    const { session, participant } = binding;
+    return binding;
+  }
+
+  #leave(ws) {
+    const { session, participant } = this.#requireBinding(ws);
     session.leave(participant.id);
     for (const socket of participant.sockets) {
       this.#bindings.delete(socket);
@@ -222,15 +248,21 @@ export class PokerHub {
     }
   }
 
+  /** Schickt jedem Teilnehmer seinen eigenen Blick auf den Zustand. */
   #broadcast(session) {
     const room = this.#rooms.get(session.roomId);
     if (!room) return;
-    const payload = {
-      type: 'state',
-      room: { name: room.name },
-      participants: session.publicParticipants(),
-    };
-    for (const socket of session.sockets()) send(socket, payload);
+    for (const participant of session.participants.values()) {
+      if (participant.sockets.size === 0) continue;
+      const payload = JSON.stringify({
+        type: 'state',
+        room: { name: room.name },
+        ...session.stateFor(participant),
+      });
+      for (const socket of participant.sockets) {
+        if (socket.readyState === socket.OPEN) socket.send(payload);
+      }
+    }
   }
 }
 

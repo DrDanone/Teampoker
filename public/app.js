@@ -39,6 +39,10 @@ const state = {
   reconnectAttempt: 0,
   reconnectTimer: null,
   joined: false,
+  round: 1,
+  revealed: false,
+  /** @type {string | null} */
+  yourVote: null,
 };
 
 function setStatus(text, isError = false) {
@@ -151,19 +155,89 @@ function endSession({ message, isError = false }) {
   showJoin({ code: isError ? '' : code, message, isError });
 }
 
-function renderState({ room, participants }) {
+function renderState({ room, round, revealed, participants, yourVote, result }) {
+  state.round = round;
+  state.revealed = revealed;
+  state.yourVote = yourVote;
+
   $('#room-title').textContent = room.name;
   document.title = `${room.name} – Wilkenpoker`;
-  const list = $('#participants');
-  list.replaceChildren(
+  $('#round-title').textContent = `Runde ${round}`;
+
+  const voted = participants.filter((p) => p.voted).length;
+  $('#progress').textContent = revealed
+    ? 'aufgedeckt'
+    : `${voted} von ${participants.length} ${participants.length === 1 ? 'hat' : 'haben'} gewählt`;
+
+  renderCards();
+  $('#reveal').disabled = revealed;
+  $('#cards-hint').textContent = revealed
+    ? 'Die Karten sind aufgedeckt. „Alle zurücksetzen“ startet die nächste Runde.'
+    : 'Wähle deine Karte. Bis zum Aufdecken kannst du sie ändern.';
+
+  renderResult(result);
+  renderParticipants(participants, result);
+}
+
+function renderCards() {
+  for (const button of document.querySelectorAll('.card')) {
+    const selected = button.dataset.value === state.yourVote;
+    button.setAttribute('aria-pressed', String(selected));
+    button.disabled = state.revealed;
+  }
+}
+
+function renderResult(result) {
+  $('#result').hidden = !result;
+  if (!result) return;
+  $('#consensus').hidden = !result.consensus;
+  $('#stat-average').textContent = formatNumber(result.average);
+  $('#stat-median').textContent = formatNumber(result.median);
+  $('#stat-spread').textContent =
+    result.min === null
+      ? '–'
+      : result.min === result.max
+        ? formatNumber(result.min)
+        : `${formatNumber(result.min)} bis ${formatNumber(result.max)}`;
+
+  const notes = [];
+  if (result.count === 0) notes.push('Keine Zahlen geschätzt.');
+  if (result.unsure > 0) notes.push(`${result.unsure}× „?“`);
+  if (result.coffee > 0) notes.push(`${result.coffee}× Kaffeepause`);
+  if (result.unsure > 0 || result.coffee > 0) notes.push('(nicht in der Statistik)');
+  $('#stat-note').textContent = notes.join(' ');
+}
+
+function renderParticipants(participants, result) {
+  const high = new Set(result?.highIds ?? []);
+  const low = new Set(result?.lowIds ?? []);
+  $('#participants').replaceChildren(
     ...participants.map((participant) => {
       const item = document.createElement('li');
       item.className = 'participant';
       item.classList.toggle('offline', !participant.online);
       item.classList.toggle('you', participant.id === state.you);
-      item.textContent = participant.name;
-      if (participant.id === state.you) item.append(suffix(' (du)'));
-      if (!participant.online) item.append(suffix(' – offline'));
+      item.classList.toggle('high', high.has(participant.id));
+      item.classList.toggle('low', low.has(participant.id));
+
+      const name = document.createElement('span');
+      name.className = 'participant-name';
+      name.textContent = participant.name;
+      if (participant.id === state.you) name.append(suffix(' (du)'));
+      if (!participant.online) name.append(suffix(' – offline'));
+
+      const badge = document.createElement('span');
+      badge.className = 'participant-vote';
+      if (state.revealed) {
+        badge.textContent = participant.vote === null ? '–' : cardLabel(participant.vote);
+        if (high.has(participant.id)) badge.append(suffix(' höchster Wert'));
+        if (low.has(participant.id)) badge.append(suffix(' niedrigster Wert'));
+      } else {
+        badge.textContent = participant.voted ? 'hat gewählt' : 'wählt noch';
+        badge.classList.toggle('pending', !participant.voted);
+      }
+
+      item.append(name, badge);
       return item;
     }),
   );
@@ -175,6 +249,49 @@ function suffix(text) {
   span.textContent = text;
   return span;
 }
+
+const CARDS = ['0', '0.5', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?', 'coffee'];
+
+function cardLabel(value) {
+  if (value === '0.5') return '½';
+  if (value === 'coffee') return 'Kaffee';
+  return value;
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined) return '–';
+  if (value === 0.5) return '½';
+  return value.toLocaleString('de-DE', { maximumFractionDigits: 1 });
+}
+
+function buildCards() {
+  $('#cards').replaceChildren(
+    ...CARDS.map((value) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'card';
+      button.dataset.value = value;
+      button.textContent = cardLabel(value);
+      button.setAttribute('aria-pressed', 'false');
+      if (value === 'coffee') button.setAttribute('aria-label', 'Kaffeepause');
+      if (value === '?') button.setAttribute('aria-label', 'Unsicher');
+      return button;
+    }),
+  );
+}
+
+$('#cards').addEventListener('click', (event) => {
+  const button = event.target.closest('.card');
+  if (!button || state.revealed) return;
+  // Erneuter Klick auf die gewählte Karte nimmt sie zurück.
+  const value = button.dataset.value === state.yourVote ? null : button.dataset.value;
+  state.yourVote = value;
+  renderCards();
+  send({ type: 'vote', value });
+});
+
+$('#reveal').addEventListener('click', () => send({ type: 'reveal', round: state.round }));
+$('#reset').addEventListener('click', () => send({ type: 'reset', round: state.round }));
 
 function markAllOffline() {
   for (const item of document.querySelectorAll('.participant')) item.classList.add('offline');
@@ -200,6 +317,7 @@ $('#join-form').addEventListener('submit', (event) => {
 $('#leave').addEventListener('click', () => send({ type: 'leave' }));
 
 function init() {
+  buildCards();
   const match = location.pathname.match(/^\/join\/([A-Za-z0-9-]+)\/?$/);
   // Der Code soll nicht in der Adresszeile stehen bleiben (Bildschirmfreigabe im Refinement).
   if (match) history.replaceState(null, '', '/');
