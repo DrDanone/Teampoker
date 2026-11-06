@@ -66,7 +66,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 - **HTTPS**, sobald der Zugriff über das Heimnetz hinausgeht (über Tunnel oder Reverse Proxy). Ohne HTTPS gehen Admin-Passwort und Raum-Codes im Klartext übers Netz.
 - **Admin-Login:** starkes Passwort aus Umgebungsvariable, zeitkonstanter Vergleich, Sperre nach Fehlversuchen, Session-Cookie `HttpOnly`, `SameSite=Strict`, `Secure` (hinter HTTPS), Ablauf nach Inaktivität.
 - **Raum-Codes** mit kryptografischem Zufall; Sperre nach zu vielen Fehlversuchen.
-- **Logo-Upload** ist die größte Angriffsfläche: Dateityp über die Dateisignatur prüfen, SVG bereinigen (Skripte, Event-Handler, externe Verweise entfernen), eigener Dateiname, Auslieferung mit `X-Content-Type-Options: nosniff` und restriktiver CSP.
+- **Logo-Upload** ist die größte Angriffsfläche: Dateityp über die Dateisignatur prüfen, SVG mit aktiven oder nachladenden Inhalten (Skripte, Event-Handler, externe Verweise) ablehnen, eigener Dateiname, Auslieferung mit `X-Content-Type-Options: nosniff` und restriktiver CSP.
 - **Eingaben:** Namen auf Länge und Zeichen prüfen, nie als HTML ausgeben (Schutz vor XSS). Jede WebSocket-Nachricht serverseitig validieren.
 - **WebSocket:** Origin-Prüfung, Größen- und Ratenlimit pro Verbindung, maximale Teilnehmerzahl pro Raum.
 - **HTTP-Header:** Content-Security-Policy, `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy: no-referrer` (der Einladungslink enthält den Code).
