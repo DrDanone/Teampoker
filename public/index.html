@@ -12,6 +12,7 @@
   </head>
   <body>
     <header class="topbar">
+      <span id="logo-slot" class="logo-slot"></span>
       <p class="brand">Wilkenpoker</p>
       <span id="room-title" class="topbar-context"></span>
       <span class="topbar-end">
@@ -19,7 +20,6 @@
           <span class="icon icon-logout" aria-hidden="true"></span>
           <span class="leave-label">Raum verlassen</span>
         </button>
-        <span id="logo-slot" class="logo-slot"></span>
       </span>
     </header>
 
@@ -58,13 +58,11 @@
 
         <div class="room-layout">
           <div class="room-main">
-            <div class="round-bar">
-              <h1 id="round-title" class="headline">Runde 1</h1>
-              <span id="progress" class="progress"></span>
-            </div>
-
             <section class="panel" aria-labelledby="cards-title">
-              <h2 id="cards-title" class="section-title">Deine Karte</h2>
+              <div class="round-bar">
+                <h1 id="cards-title" class="section-title">Deine Karte</h1>
+                <span id="progress" class="progress"></span>
+              </div>
               <p id="cards-hint" class="hint cards-hint">
                 Wähle deine Karte. Bis zum Aufdecken kannst du sie ändern.
               </p>
