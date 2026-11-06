@@ -105,7 +105,8 @@ body {
   overflow: hidden;
 }
 
-/* Die Purple-Kurve oben links – Erkennungszeichen von GY Utility. */
+/* Die Purple-Kurve oben links – Erkennungszeichen von GY Utility.
+   Ist ein Logo hochgeladen, steht stattdessen das Logo in der Ecke. */
 .topbar::before {
   content: '';
   position: absolute;
@@ -115,6 +116,18 @@ body {
   height: 128px;
   border-radius: 50%;
   border: 14px solid var(--purple);
+}
+
+.topbar.has-logo {
+  padding-left: var(--space-5);
+}
+
+.topbar.has-logo::before {
+  display: none;
+}
+
+.logo-slot:empty {
+  display: none;
 }
 
 .brand {
@@ -349,6 +362,10 @@ input[type='file'] {
     gap: var(--space-1) var(--space-2);
     padding-left: 4.5rem;
     padding-right: var(--space-4);
+  }
+
+  .topbar.has-logo {
+    padding-left: var(--space-4);
   }
 
   .brand {
