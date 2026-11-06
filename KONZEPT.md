@@ -78,7 +78,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 
 - Jedes Arbeitspaket ist ein GitHub-Issue.
 - Pro Arbeitspaket ein eigener Branch und ein Pull Request, der das Issue referenziert.
-- Gemergt wird erst nach Code Review.
+- Gemergt wird erst nach Code Review. Markus macht die Reviews in separaten Claude-Sitzungen und mergt selbst.
 
 ## Technik
 
