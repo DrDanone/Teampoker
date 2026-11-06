@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+data
+test
+scripts
+docs
+*.md
+.env
+.editorconfig
+.prettierrc.json
+.prettierignore
+eslint.config.js
+docker-compose*.yml
