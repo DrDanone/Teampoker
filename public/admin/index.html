@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Verwaltung – Wilkenpoker</title>
+    <link rel="stylesheet" href="/admin/admin.css" />
+    <script src="/admin/admin.js" type="module"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>Wilkenpoker · Verwaltung</h1>
+      <button id="logout" type="button" class="button-secondary" hidden>Abmelden</button>
+    </header>
+
+    <main>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <section id="login-view" hidden>
+        <h2>Anmelden</h2>
+        <form id="login-form">
+          <label for="password">Passwort</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button type="submit">Anmelden</button>
+        </form>
+      </section>
+
+      <section id="rooms-view" hidden>
+        <h2>Räume</h2>
+        <form id="create-form" class="inline-form">
+          <label for="room-name">Neuer Raum</label>
+          <input id="room-name" name="name" maxlength="50" placeholder="z. B. Team ESM" required />
+          <button type="submit">Anlegen</button>
+        </form>
+
+        <p id="empty" class="hint" hidden>Noch keine Räume angelegt.</p>
+        <ul id="rooms" class="rooms"></ul>
+      </section>
+    </main>
+
+    <template id="room-template">
+      <li class="room">
+        <div class="room-head">
+          <h3 class="room-name"></h3>
+          <span class="room-created"></span>
+        </div>
+        <dl class="room-code">
+          <dt>Code</dt>
+          <dd><code class="code"></code></dd>
+        </dl>
+        <div class="actions">
+          <button type="button" data-action="copy-code" class="button-secondary">
+            Code kopieren
+          </button>
+          <button type="button" data-action="copy-link" class="button-secondary">
+            Einladungslink kopieren
+          </button>
+          <button type="button" data-action="rename" class="button-secondary">Umbenennen</button>
+          <button type="button" data-action="regenerate" class="button-secondary">
+            Code neu erzeugen
+          </button>
+          <button type="button" data-action="delete" class="button-danger">Löschen</button>
+        </div>
+        <div class="confirm" hidden>
+          <p class="confirm-text"></p>
+          <button type="button" data-action="confirm" class="button-danger">Ja</button>
+          <button type="button" data-action="cancel" class="button-secondary">Abbrechen</button>
+        </div>
+        <form class="rename-form inline-form" hidden>
+          <label>Neuer Name <input name="name" maxlength="50" required /></label>
+          <button type="submit">Speichern</button>
+          <button type="button" data-action="cancel-rename" class="button-secondary">
+            Abbrechen
+          </button>
+        </form>
+      </li>
+    </template>
+  </body>
+</html>
