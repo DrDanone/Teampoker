@@ -132,10 +132,33 @@ function startsWith(data, bytes) {
   return data.length >= bytes.length && bytes.every((byte, i) => data[i] === byte);
 }
 
+/**
+ * Prüft, ob die Datei mit einem svg-Element beginnt (davor optional
+ * XML-Deklaration, Kommentare und Leerraum). Bewusst ohne verschachtelte
+ * reguläre Ausdrücke, damit präparierte Dateien den Server nicht durch
+ * Backtracking blockieren können (ReDoS).
+ */
 function looksLikeSvg(data) {
-  const text = data.toString('utf8', 0, Math.min(data.length, 4096)).replace(/^\uFEFF/, '');
-  // Optional XML-Deklaration und Kommentare, dann das svg-Element.
-  return /^\s*(<\?xml[^>]*\?>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(text);
+  const text = data.toString('utf8', 0, Math.min(data.length, 4096));
+  let i = text.charCodeAt(0) === 0xfeff ? 1 : 0;
+  const skipSpace = () => {
+    while (i < text.length && /\s/.test(text[i])) i += 1;
+  };
+
+  skipSpace();
+  if (text.startsWith('<?xml', i)) {
+    const end = text.indexOf('?>', i);
+    if (end < 0) return false;
+    i = end + 2;
+  }
+  for (;;) {
+    skipSpace();
+    if (!text.startsWith('<!--', i)) break;
+    const end = text.indexOf('-->', i + 4);
+    if (end < 0) return false;
+    i = end + 3;
+  }
+  return /^<svg[\s>]/i.test(text.slice(i, i + 5));
 }
 
 /**

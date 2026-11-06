@@ -220,8 +220,8 @@
 
 .participant-name {
   flex: 1;
-  min-width: 0;
-  overflow-wrap: anywhere;
+  min-width: 5rem;
+  overflow-wrap: break-word;
 }
 
 .participant.you .participant-name {
