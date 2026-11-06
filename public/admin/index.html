@@ -4,15 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#951b81" />
     <title>Verwaltung – Wilkenpoker</title>
+    <link rel="stylesheet" href="/theme.css" />
+    <link rel="stylesheet" href="/icons.css" />
     <link rel="stylesheet" href="/admin/admin.css" />
     <script src="/admin/admin.js" type="module"></script>
   </head>
   <body>
     <header class="topbar">
-      <h1>Wilkenpoker · Verwaltung</h1>
+      <p class="brand">Wilkenpoker</p>
+      <span class="topbar-context">Verwaltung</span>
       <span class="topbar-end">
-        <button id="logout" type="button" class="button-secondary" hidden>Abmelden</button>
+        <button id="logout" type="button" class="button button-secondary button-small" hidden>
+          <span class="icon icon-logout" aria-hidden="true"></span>
+          <span class="logout-label">Abmelden</span>
+        </button>
         <span id="logo-slot" class="logo-slot"></span>
       </span>
     </header>
@@ -20,93 +27,154 @@
     <main>
       <p id="status" class="status" role="status" aria-live="polite"></p>
 
-      <section id="login-view" hidden>
-        <h2>Anmelden</h2>
-        <form id="login-form">
-          <label for="password">Passwort</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
-          <button type="submit">Anmelden</button>
-        </form>
-      </section>
-
-      <section id="rooms-view" hidden>
-        <h2>Räume</h2>
-        <form id="create-form" class="inline-form">
-          <label for="room-name">Neuer Raum</label>
-          <input id="room-name" name="name" maxlength="50" placeholder="z. B. Team ESM" required />
-          <button type="submit">Anlegen</button>
-        </form>
-
-        <p id="empty" class="hint" hidden>Noch keine Räume angelegt.</p>
-        <ul id="rooms" class="rooms"></ul>
-      </section>
-
-      <section id="logo-view" hidden>
-        <h2>Logo</h2>
-        <p class="hint">
-          Erscheint oben rechts auf allen Seiten. PNG, JPG, WebP oder SVG, höchstens 1 MB.
-        </p>
-        <div class="logo-preview">
-          <img id="logo-preview" alt="Aktuelles Logo" hidden />
-          <span id="logo-none" class="hint">Kein Logo hochgeladen.</span>
-        </div>
-        <form id="logo-form" class="inline-form">
-          <label for="logo-file">Neues Logo</label>
-          <input
-            id="logo-file"
-            name="logo"
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            required
-          />
-          <button type="submit">Hochladen</button>
-          <button id="logo-remove" type="button" class="button-danger" hidden>
-            Logo entfernen
+      <section id="login-view" class="login" hidden>
+        <h1 class="headline">Anmelden</h1>
+        <p class="subheadline">Verwaltung der Räume für den Superadmin.</p>
+        <form id="login-form" class="box-outline stack">
+          <div class="field">
+            <label for="password">Passwort</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" class="button">
+            <span class="icon icon-login" aria-hidden="true"></span>
+            Anmelden
           </button>
         </form>
       </section>
+
+      <div id="admin-view" class="admin-layout" hidden>
+        <section aria-labelledby="rooms-title">
+          <h1 id="rooms-title" class="headline">Räume</h1>
+          <p class="subheadline">Ein Raum pro Team. Der Code ist der Zugang.</p>
+
+          <form id="create-form" class="panel create-form">
+            <div class="field">
+              <label for="room-name">Neuer Raum</label>
+              <input
+                id="room-name"
+                name="name"
+                maxlength="50"
+                placeholder="z. B. Team ESM"
+                required
+              />
+            </div>
+            <button type="submit" class="button">Anlegen</button>
+          </form>
+
+          <p id="empty" class="hint" hidden>Noch keine Räume angelegt.</p>
+          <ul id="rooms" class="rooms"></ul>
+        </section>
+
+        <section id="logo-view" class="box-outline logo-section" aria-labelledby="logo-title">
+          <h2 id="logo-title" class="section-title">Logo</h2>
+          <p class="hint">
+            Erscheint oben rechts auf allen Seiten. PNG, JPG, WebP oder SVG, höchstens 1 MB.
+          </p>
+          <div class="logo-preview">
+            <img id="logo-preview" alt="Aktuelles Logo" hidden />
+            <span id="logo-none" class="hint">Kein Logo hochgeladen.</span>
+          </div>
+          <form id="logo-form" class="stack">
+            <div class="field">
+              <label for="logo-file">Neues Logo</label>
+              <input
+                id="logo-file"
+                name="logo"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                required
+              />
+            </div>
+            <div class="button-row">
+              <button type="submit" class="button">
+                <span class="icon icon-upload" aria-hidden="true"></span>
+                Hochladen
+              </button>
+              <button id="logo-remove" type="button" class="button button-danger" hidden>
+                <span class="icon icon-delete" aria-hidden="true"></span>
+                Entfernen
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
     </main>
 
     <template id="room-template">
       <li class="room">
         <div class="room-head">
-          <h3 class="room-name"></h3>
-          <span class="room-created"></span>
+          <h2 class="room-name"></h2>
+          <span class="room-created hint"></span>
         </div>
-        <dl class="room-code">
-          <dt>Code</dt>
-          <dd><code class="code"></code></dd>
-        </dl>
-        <div class="actions">
-          <button type="button" data-action="copy-code" class="button-secondary">
+        <p class="room-code">
+          <span class="room-code-label">Code</span>
+          <code class="code"></code>
+        </p>
+        <div class="button-row">
+          <button
+            type="button"
+            data-action="copy-code"
+            class="button button-secondary button-small"
+          >
+            <span class="icon icon-content-copy" aria-hidden="true"></span>
             Code kopieren
           </button>
-          <button type="button" data-action="copy-link" class="button-secondary">
+          <button
+            type="button"
+            data-action="copy-link"
+            class="button button-secondary button-small"
+          >
+            <span class="icon icon-link" aria-hidden="true"></span>
             Einladungslink kopieren
           </button>
-          <button type="button" data-action="rename" class="button-secondary">Umbenennen</button>
-          <button type="button" data-action="regenerate" class="button-secondary">
+          <button type="button" data-action="rename" class="button button-secondary button-small">
+            <span class="icon icon-edit" aria-hidden="true"></span>
+            Umbenennen
+          </button>
+          <button
+            type="button"
+            data-action="regenerate"
+            class="button button-secondary button-small"
+          >
+            <span class="icon icon-autorenew" aria-hidden="true"></span>
             Code neu erzeugen
           </button>
-          <button type="button" data-action="delete" class="button-danger">Löschen</button>
+          <button type="button" data-action="delete" class="button button-danger button-small">
+            <span class="icon icon-delete" aria-hidden="true"></span>
+            Löschen
+          </button>
         </div>
         <div class="confirm" hidden>
           <p class="confirm-text"></p>
-          <button type="button" data-action="confirm" class="button-danger">Ja</button>
-          <button type="button" data-action="cancel" class="button-secondary">Abbrechen</button>
+          <div class="button-row">
+            <button type="button" data-action="confirm" class="button button-danger button-small">
+              Ja
+            </button>
+            <button type="button" data-action="cancel" class="button button-secondary button-small">
+              Abbrechen
+            </button>
+          </div>
         </div>
-        <form class="rename-form inline-form" hidden>
-          <label>Neuer Name <input name="name" maxlength="50" required /></label>
-          <button type="submit">Speichern</button>
-          <button type="button" data-action="cancel-rename" class="button-secondary">
-            Abbrechen
-          </button>
+        <form class="rename-form" hidden>
+          <div class="field">
+            <label>Neuer Name <input name="name" maxlength="50" required /></label>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="button button-small">Speichern</button>
+            <button
+              type="button"
+              data-action="cancel-rename"
+              class="button button-secondary button-small"
+            >
+              Abbrechen
+            </button>
+          </div>
         </form>
       </li>
     </template>

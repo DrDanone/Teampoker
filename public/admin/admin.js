@@ -36,15 +36,21 @@ async function api(method, path, body) {
 
 function setStatus(text, isError = false) {
   const status = $('#status');
-  status.textContent = text;
+  status.replaceChildren();
+  if (text && isError) {
+    const icon = document.createElement('span');
+    icon.className = 'icon icon-close';
+    icon.setAttribute('aria-hidden', 'true');
+    status.append(icon);
+  }
+  if (text) status.append(text);
   status.classList.toggle('status-error', isError);
 }
 
 function showLogin(message = '') {
   csrfToken = '';
   $('#login-view').hidden = false;
-  $('#rooms-view').hidden = true;
-  $('#logo-view').hidden = true;
+  $('#admin-view').hidden = true;
   $('#logout').hidden = true;
   setStatus(message, Boolean(message));
   $('#password').focus();
@@ -52,8 +58,7 @@ function showLogin(message = '') {
 
 async function showRooms() {
   $('#login-view').hidden = true;
-  $('#rooms-view').hidden = false;
-  $('#logo-view').hidden = false;
+  $('#admin-view').hidden = false;
   $('#logout').hidden = false;
   await Promise.all([loadRooms(), loadLogo()]);
 }

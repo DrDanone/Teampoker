@@ -48,9 +48,26 @@ const state = {
 };
 
 function setStatus(text, isError = false) {
-  const status = $('#status');
-  status.textContent = text;
-  status.classList.toggle('status-error', isError);
+  for (const status of document.querySelectorAll('.status')) {
+    status.replaceChildren();
+    if (text && isError) status.append(icon('close'));
+    if (text) status.append(text);
+    status.classList.toggle('status-error', isError);
+  }
+}
+
+/** Material-Symbols-Icon als dekoratives Element. */
+function icon(name) {
+  const span = document.createElement('span');
+  span.className = `icon icon-${name.replaceAll('_', '-')}`;
+  span.setAttribute('aria-hidden', 'true');
+  return span;
+}
+
+function initials(name) {
+  const parts = name.split(' ').filter(Boolean);
+  const letters = parts.length > 1 ? [parts[0], parts.at(-1)] : [parts[0] ?? '?'];
+  return letters.map((part) => [...part][0].toLocaleUpperCase('de')).join('');
 }
 
 function showJoin({ code = '', message = '', isError = false } = {}) {
@@ -58,6 +75,8 @@ function showJoin({ code = '', message = '', isError = false } = {}) {
   $('#join-view').hidden = false;
   $('#room-view').hidden = true;
   $('#room-title').textContent = '';
+  $('#leave').hidden = true;
+  document.title = 'Wilkenpoker';
   if (code) $('#code').value = code;
   $('#name').value ||= storage.get(NAME_KEY) ?? '';
   setStatus(message, isError);
@@ -67,6 +86,7 @@ function showJoin({ code = '', message = '', isError = false } = {}) {
 function showRoom() {
   $('#join-view').hidden = true;
   $('#room-view').hidden = false;
+  $('#leave').hidden = false;
 }
 
 function connect() {
@@ -200,7 +220,7 @@ function renderResult(result) {
       ? '–'
       : result.min === result.max
         ? formatNumber(result.min)
-        : `${formatNumber(result.min)} bis ${formatNumber(result.max)}`;
+        : `${formatNumber(result.min)} – ${formatNumber(result.max)}`;
 
   const notes = [];
   if (result.count === 0) notes.push('Keine Zahlen geschätzt.');
@@ -222,27 +242,61 @@ function renderParticipants(participants, result) {
       item.classList.toggle('high', high.has(participant.id));
       item.classList.toggle('low', low.has(participant.id));
 
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = initials(participant.name);
+
       const name = document.createElement('span');
       name.className = 'participant-name';
       name.textContent = participant.name;
       if (participant.id === state.you) name.append(suffix(' (du)'));
       if (!participant.online) name.append(suffix(' – offline'));
 
-      const badge = document.createElement('span');
-      badge.className = 'participant-vote';
+      const status = document.createElement('span');
+      status.className = 'participant-vote';
       if (state.revealed) {
-        badge.textContent = participant.vote === null ? '–' : cardLabel(participant.vote);
-        if (high.has(participant.id)) badge.append(suffix(' höchster Wert'));
-        if (low.has(participant.id)) badge.append(suffix(' niedrigster Wert'));
+        if (high.has(participant.id)) status.append(outlier('arrow_upward', 'höchster'));
+        if (low.has(participant.id)) status.append(outlier('arrow_downward', 'niedrigster'));
+        status.append(voteChip(participant.vote));
+      } else if (participant.voted) {
+        status.append(icon('check'), visuallyHidden('hat gewählt'));
       } else {
-        badge.textContent = participant.voted ? 'hat gewählt' : 'wählt noch';
-        badge.classList.toggle('pending', !participant.voted);
+        status.classList.add('pending');
+        status.append(icon('hourglass_empty'), visuallyHidden('wählt noch'));
       }
 
-      item.append(name, badge);
+      item.append(badge, name, status);
       return item;
     }),
   );
+}
+
+function outlier(iconName, label) {
+  const span = document.createElement('span');
+  span.className = 'outlier';
+  span.append(icon(iconName), label);
+  return span;
+}
+
+function voteChip(vote) {
+  const chip = document.createElement('span');
+  chip.className = 'vote-chip';
+  if (vote === null) {
+    chip.classList.add('empty');
+    chip.textContent = '–';
+    chip.title = 'keine Karte';
+  } else {
+    chip.append(cardContent(vote));
+  }
+  return chip;
+}
+
+function visuallyHidden(text) {
+  const span = document.createElement('span');
+  span.className = 'visually-hidden';
+  span.textContent = ` ${text}`;
+  return span;
 }
 
 function suffix(text) {
@@ -254,10 +308,14 @@ function suffix(text) {
 
 const CARDS = ['0', '0.5', '1', '2', '3', '5', '8', '13', '20', '40', '100', '?', 'coffee'];
 
-function cardLabel(value) {
-  if (value === '0.5') return '½';
-  if (value === 'coffee') return 'Kaffee';
-  return value;
+/** Inhalt einer Karte: Zahl, ½, ? oder das Kaffee-Icon. */
+function cardContent(value) {
+  if (value === 'coffee') {
+    const fragment = document.createDocumentFragment();
+    fragment.append(icon('coffee'), visuallyHidden('Kaffeepause'));
+    return fragment;
+  }
+  return document.createTextNode(value === '0.5' ? '½' : value);
 }
 
 function formatNumber(value) {
@@ -273,10 +331,13 @@ function buildCards() {
       button.type = 'button';
       button.className = 'card';
       button.dataset.value = value;
-      button.textContent = cardLabel(value);
+      button.append(cardContent(value));
       button.setAttribute('aria-pressed', 'false');
-      if (value === 'coffee') button.setAttribute('aria-label', 'Kaffeepause');
-      if (value === '?') button.setAttribute('aria-label', 'Unsicher');
+      if (value === 'coffee') button.title = 'Kaffeepause';
+      if (value === '?') {
+        button.title = 'Unsicher';
+        button.setAttribute('aria-label', 'Unsicher');
+      }
       return button;
     }),
   );

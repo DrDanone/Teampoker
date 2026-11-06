@@ -56,3 +56,7 @@ Bewusst wenige:
 - **Entwicklung:** ESLint und Prettier für einheitlichen Code. Tests laufen mit dem eingebauten Test-Runner von Node.js, ohne zusätzliches Framework.
 
 Den HTTP-Server stellt Node.js selbst bereit, ein Web-Framework ist nicht nötig.
+
+## Gestaltung
+
+Corporate Design **GY Utility**: Tokens und Grundelemente in `public/theme.css`. Schrift ist Aptos, wo installiert (Windows 11, Microsoft 365), sonst Segoe UI, Helvetica oder Arial. Icons sind [Material Symbols](https://fonts.google.com/icons) (Outlined, Weight 200, Apache 2.0) und liegen lokal unter `public/icons/` – die Seite lädt nichts von fremden Servern.

@@ -1,193 +1,140 @@
-/* Vorläufige, schlichte Gestaltung. Das GY-Utility-Design folgt mit Issue #7. */
+/* Verwaltungsseite. Grundlagen in theme.css. */
 
-:root {
-  --purple: #951b81;
-  --deep-blue: #081950;
-  --magenta: #d71482;
-  --gray-100: #f2f2f2;
-  --gray-300: #d1d1d1;
-  --gray-600: #747474;
-  font-family: Aptos, 'Aptos Display', 'Segoe UI', Helvetica, Arial, sans-serif;
-  color: #000;
+.stack {
+  display: grid;
+  gap: var(--space-4);
 }
 
-body {
-  margin: 0;
+.stack > .button {
+  justify-self: start;
 }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--gray-300);
-}
-
-h1 {
-  font-size: 1.25rem;
-  color: var(--purple);
-  margin: 0;
-}
-
-main {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 700;
-}
-
-input {
-  font: inherit;
-  padding: 0.5rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 8px;
-}
-
-button {
-  font: inherit;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--purple);
-  border-radius: 8px;
-  background: var(--purple);
-  color: #fff;
-  cursor: pointer;
-}
-
-.button-secondary {
-  background: #fff;
-  color: var(--purple);
-}
-
-.button-danger {
-  background: #fff;
-  border-color: var(--magenta);
-  color: var(--magenta);
-}
-
-button:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--deep-blue);
-  outline-offset: 2px;
-}
-
-.inline-form {
+.button-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
+}
+
+.login {
+  max-width: 28rem;
+  margin: var(--space-6) auto 0;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--gutter);
+  align-items: start;
+}
+
+.create-form {
+  display: flex;
+  flex-wrap: wrap;
   align-items: end;
-  margin-bottom: 1.5rem;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
-.inline-form label {
-  flex-basis: 100%;
-}
-
-.status {
-  min-height: 1.5rem;
-}
-
-.status-error {
-  color: var(--magenta);
-}
-
-.hint,
-.room-created {
-  color: var(--gray-600);
+.create-form .field {
+  flex: 1 1 16rem;
 }
 
 .rooms {
-  list-style: none;
-  padding: 0;
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .room {
-  border: 2px solid var(--gray-300);
-  border-radius: 16px;
-  padding: 1rem;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: var(--border-box) solid var(--purple);
+  border-radius: var(--radius-card-outline);
 }
 
 .room-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 1rem;
   align-items: baseline;
+  gap: var(--space-2) var(--space-4);
 }
 
 .room-name {
   margin: 0;
+  font-size: 1.25rem;
+  color: var(--deep-blue);
+  overflow-wrap: anywhere;
 }
 
 .room-code {
   display: flex;
-  gap: 0.5rem;
-  align-items: baseline;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
 }
 
-.room-code dd {
-  margin: 0;
+.room-code-label {
+  font-weight: 700;
+  color: var(--ink-muted);
 }
 
 .code {
+  padding: var(--space-1) var(--space-3);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
   font-size: 1.5rem;
+  font-weight: 700;
   letter-spacing: 0.15em;
-  color: var(--deep-blue);
+  color: var(--on-lilac);
+  background: var(--lilac);
+  border-radius: var(--radius-tab);
 }
 
-.actions,
-.confirm {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+.confirm,
+.rename-form {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-muted);
+  border-radius: var(--radius-box);
 }
 
 .confirm-text {
-  flex-basis: 100%;
   margin: 0;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-.logo-slot {
-  display: flex;
-  align-items: center;
-}
-
-/* Feste Höhe, damit auch SVGs ohne eigene Größenangabe sichtbar sind. */
-.logo {
-  display: block;
-  height: 40px;
-  width: auto;
-  max-width: 160px;
-  object-fit: contain;
-}
-
-.topbar-end {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  font-weight: 700;
 }
 
 .logo-preview {
   display: flex;
   align-items: center;
-  min-height: 80px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 2px dashed var(--gray-300);
-  border-radius: 16px;
+  justify-content: center;
+  min-height: 96px;
+  margin: var(--space-3) 0 var(--space-4);
+  padding: var(--space-4);
+  background: var(--surface-muted);
+  border-radius: var(--radius-box);
 }
 
 .logo-preview img {
   max-height: 80px;
   max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .logout-label {
+    display: none;
+  }
+
+  .room {
+    padding: var(--space-4);
+  }
 }

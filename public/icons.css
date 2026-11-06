@@ -1,0 +1,97 @@
+/* Google Material Symbols (Outlined, Weight 200), lokal ausgeliefert.
+ * Lizenz: Apache 2.0, siehe /icons/LICENSE.txt
+ * Einfärbung über currentColor mit CSS-Maske. */
+
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.25em;
+  background-color: currentColor;
+  mask: var(--icon) no-repeat center / contain;
+}
+
+.icon-arrow-downward {
+  --icon: url('/icons/arrow_downward.svg');
+}
+
+.icon-arrow-upward {
+  --icon: url('/icons/arrow_upward.svg');
+}
+
+.icon-autorenew {
+  --icon: url('/icons/autorenew.svg');
+}
+
+.icon-check {
+  --icon: url('/icons/check.svg');
+}
+
+.icon-close {
+  --icon: url('/icons/close.svg');
+}
+
+.icon-coffee {
+  --icon: url('/icons/coffee.svg');
+}
+
+.icon-content-copy {
+  --icon: url('/icons/content_copy.svg');
+}
+
+.icon-delete {
+  --icon: url('/icons/delete.svg');
+}
+
+.icon-edit {
+  --icon: url('/icons/edit.svg');
+}
+
+.icon-group {
+  --icon: url('/icons/group.svg');
+}
+
+.icon-handshake {
+  --icon: url('/icons/handshake.svg');
+}
+
+.icon-help {
+  --icon: url('/icons/help.svg');
+}
+
+.icon-hourglass-empty {
+  --icon: url('/icons/hourglass_empty.svg');
+}
+
+.icon-link {
+  --icon: url('/icons/link.svg');
+}
+
+.icon-login {
+  --icon: url('/icons/login.svg');
+}
+
+.icon-logout {
+  --icon: url('/icons/logout.svg');
+}
+
+.icon-person {
+  --icon: url('/icons/person.svg');
+}
+
+.icon-restart-alt {
+  --icon: url('/icons/restart_alt.svg');
+}
+
+.icon-upload {
+  --icon: url('/icons/upload.svg');
+}
+
+.icon-visibility {
+  --icon: url('/icons/visibility.svg');
+}
+
+.icon-wifi-off {
+  --icon: url('/icons/wifi_off.svg');
+}

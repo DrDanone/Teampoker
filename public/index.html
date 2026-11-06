@@ -3,81 +3,122 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#951b81" />
     <title>Wilkenpoker</title>
+    <link rel="stylesheet" href="/theme.css" />
+    <link rel="stylesheet" href="/icons.css" />
     <link rel="stylesheet" href="/app.css" />
     <script src="/app.js" type="module"></script>
   </head>
   <body>
     <header class="topbar">
-      <h1>Wilkenpoker</h1>
-      <span id="room-title" class="room-title"></span>
-      <span id="logo-slot" class="logo-slot"></span>
+      <p class="brand">Wilkenpoker</p>
+      <span id="room-title" class="topbar-context"></span>
+      <span class="topbar-end">
+        <button id="leave" type="button" class="button button-secondary button-small" hidden>
+          <span class="icon icon-logout" aria-hidden="true"></span>
+          <span class="leave-label">Raum verlassen</span>
+        </button>
+        <span id="logo-slot" class="logo-slot"></span>
+      </span>
     </header>
 
     <main>
-      <p id="status" class="status" role="status" aria-live="polite"></p>
-
-      <section id="join-view" hidden>
-        <h2>Raum beitreten</h2>
-        <form id="join-form" novalidate>
-          <label for="code">Raum-Code</label>
-          <input
-            id="code"
-            name="code"
-            autocomplete="off"
-            autocapitalize="characters"
-            spellcheck="false"
-            maxlength="12"
-            placeholder="z. B. AB3D5F7H"
-            required
-          />
-          <label for="name">Dein Name</label>
-          <input id="name" name="name" autocomplete="nickname" maxlength="30" required />
-          <button type="submit">Beitreten</button>
+      <section id="join-view" class="join" hidden>
+        <h1 class="headline">Raum beitreten</h1>
+        <p class="subheadline">Mit dem Raum-Code deines Teams und deinem Namen.</p>
+        <p id="join-status" class="status" role="status" aria-live="polite"></p>
+        <form id="join-form" class="box-outline join-form" novalidate>
+          <div class="field">
+            <label for="code">Raum-Code</label>
+            <input
+              id="code"
+              name="code"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              maxlength="12"
+              placeholder="z. B. AB3D5F7H"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="name">Dein Name</label>
+            <input id="name" name="name" autocomplete="nickname" maxlength="30" required />
+          </div>
+          <button type="submit" class="button">
+            <span class="icon icon-login" aria-hidden="true"></span>
+            Beitreten
+          </button>
         </form>
       </section>
 
-      <section id="room-view" hidden>
-        <div class="round-bar">
-          <h2 id="round-title">Runde 1</h2>
-          <span id="progress" class="progress"></span>
+      <section id="room-view" class="room" hidden>
+        <p id="room-status" class="status" role="status" aria-live="polite"></p>
+
+        <div class="room-layout">
+          <div class="room-main">
+            <div class="round-bar">
+              <h1 id="round-title" class="headline">Runde 1</h1>
+              <span id="progress" class="progress"></span>
+            </div>
+
+            <section class="panel" aria-labelledby="cards-title">
+              <h2 id="cards-title" class="section-title">Deine Karte</h2>
+              <p id="cards-hint" class="hint cards-hint">
+                Wähle deine Karte. Bis zum Aufdecken kannst du sie ändern.
+              </p>
+              <div id="cards" class="cards" role="group" aria-labelledby="cards-title"></div>
+              <div class="round-actions">
+                <button id="reveal" type="button" class="button">
+                  <span class="icon icon-visibility" aria-hidden="true"></span>
+                  Aufdecken
+                </button>
+                <button id="reset" type="button" class="button button-secondary">
+                  <span class="icon icon-restart-alt" aria-hidden="true"></span>
+                  Alle zurücksetzen
+                </button>
+              </div>
+            </section>
+
+            <section
+              id="result"
+              class="result"
+              hidden
+              aria-labelledby="result-title"
+              aria-live="polite"
+            >
+              <h2 id="result-title" class="section-title result-title">Ergebnis</h2>
+              <p id="consensus" class="consensus" hidden>
+                <span class="icon icon-handshake" aria-hidden="true"></span>
+                Einigkeit – alle haben gleich geschätzt.
+              </p>
+              <dl class="stats">
+                <div>
+                  <dt>Durchschnitt</dt>
+                  <dd id="stat-average">–</dd>
+                </div>
+                <div>
+                  <dt>Median</dt>
+                  <dd id="stat-median">–</dd>
+                </div>
+                <div>
+                  <dt>Spanne</dt>
+                  <dd id="stat-spread">–</dd>
+                </div>
+              </dl>
+              <p id="stat-note" class="stat-note"></p>
+            </section>
+          </div>
+
+          <aside class="room-side" aria-labelledby="participants-title">
+            <h2 id="participants-title" class="section-title">
+              <span class="icon icon-group" aria-hidden="true"></span>
+              Teilnehmer
+            </h2>
+            <ul id="participants" class="participants"></ul>
+          </aside>
         </div>
-
-        <section aria-labelledby="cards-title">
-          <h3 id="cards-title" class="visually-hidden">Deine Karte</h3>
-          <p id="cards-hint" class="hint">
-            Wähle deine Karte. Bis zum Aufdecken kannst du sie ändern.
-          </p>
-          <div id="cards" class="cards" role="group" aria-labelledby="cards-title"></div>
-        </section>
-
-        <div class="round-actions">
-          <button id="reveal" type="button">Aufdecken</button>
-          <button id="reset" type="button" class="button-secondary">Alle zurücksetzen</button>
-        </div>
-
-        <section id="result" class="result" hidden aria-live="polite">
-          <p id="consensus" class="consensus" hidden>Einigkeit!</p>
-          <dl class="stats">
-            <div>
-              <dt>Durchschnitt</dt>
-              <dd id="stat-average">–</dd>
-            </div>
-            <div>
-              <dt>Median</dt>
-              <dd id="stat-median">–</dd>
-            </div>
-            <div>
-              <dt>Spanne</dt>
-              <dd id="stat-spread">–</dd>
-            </div>
-          </dl>
-          <p id="stat-note" class="hint"></p>
-        </section>
-
-        <h3>Teilnehmer</h3>
-        <ul id="participants" class="participants"></ul>
-        <button id="leave" type="button" class="button-secondary">Raum verlassen</button>
       </section>
     </main>
   </body>
