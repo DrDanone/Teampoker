@@ -1,1 +1,58 @@
 # Wilkenpoker
+
+Planning Poker für die Refinements: Teams schätzen verdeckt, decken gemeinsam auf und diskutieren die Ausreißer. Das Konzept steht in [`KONZEPT.md`](KONZEPT.md), die Arbeitspakete in den [Issues](https://github.com/DrDanone/Wilkenpoker/issues).
+
+## Voraussetzungen
+
+- Node.js 22 (siehe `.nvmrc`)
+
+## Lokal starten
+
+```bash
+npm install
+npm run dev     # mit automatischem Neustart bei Änderungen
+# oder
+npm start
+```
+
+Danach ist die App unter <http://localhost:3000> erreichbar.
+
+## Konfiguration
+
+| Variable         | Standard | Bedeutung                                      |
+| ---------------- | -------- | ---------------------------------------------- |
+| `PORT`           | `3000`   | Port des Servers                               |
+| `DATA_DIR`       | `./data` | Verzeichnis für Räume und Logo                 |
+| `ADMIN_PASSWORD` | –        | Passwort des Superadmins (ab Issue #3 Pflicht) |
+
+## Prüfen
+
+```bash
+npm test        # Tests
+npm run lint    # ESLint und Prettier
+npm run format  # Formatierung automatisch korrigieren
+```
+
+Die CI führt Lint, Tests und `npm audit` bei jedem Pull Request aus.
+
+## Aufbau
+
+```
+server/   Node.js-Server (HTTP, WebSocket unter /ws, Konfiguration)
+public/   Oberfläche, wird statisch ausgeliefert
+test/     Tests mit dem eingebauten Test-Runner von Node.js
+```
+
+Endpunkte:
+
+- `GET /healthz` – Gesundheitsprüfung für Docker
+- `/ws` – WebSocket für Live-Updates
+
+## Abhängigkeiten
+
+Bewusst wenige:
+
+- **Laufzeit:** [`ws`](https://github.com/websockets/ws) – WebSocket-Server. Node.js bringt bisher nur einen WebSocket-Client mit, keinen Server.
+- **Entwicklung:** ESLint und Prettier für einheitlichen Code. Tests laufen mit dem eingebauten Test-Runner von Node.js, ohne zusätzliches Framework.
+
+Den HTTP-Server stellt Node.js selbst bereit, ein Web-Framework ist nicht nötig.
