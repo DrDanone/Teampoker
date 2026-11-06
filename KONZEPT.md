@@ -10,10 +10,10 @@ Planning-Poker-Website für die wöchentlichen Refinements. Teams schätzen verd
 
 ## Rollen
 
-| Rolle | Zugang | Rechte |
-|---|---|---|
-| Superadmin (Markus) | `/admin`, Passwort aus Umgebungsvariable `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen; Logo hochladen |
-| Teilnehmer | Raum-Code + Name | Schätzen, aufdecken, alle Schätzungen zurücksetzen |
+| Rolle               | Zugang                                                                                 | Rechte                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Superadmin (Markus) | `/admin/` – nur direkt im Heimnetz, nie über den Tunnel; Passwort aus `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen; Logo hochladen |
+| Teilnehmer          | Raum-Code + Name                                                                       | Schätzen, aufdecken, alle Schätzungen zurücksetzen                         |
 
 Alle Teilnehmer eines Raums sind gleichberechtigt. Es gibt keinen Zuschauer-Modus – jeder schätzt mit; wer nicht schätzen will, nimmt die Kaffeetasse.
 
@@ -31,7 +31,7 @@ Alle Teilnehmer eines Raums sind gleichberechtigt. Es gibt keinen Zuschauer-Modu
 1. Teilnehmer treten mit Code und Namen bei. Der Browser merkt sich den Namen.
 2. Jeder wählt verdeckt eine Karte. Alle sehen, **wer** schon gewählt hat, nicht **was**. Bis zum Aufdecken kann die Karte geändert werden.
 3. Jemand klickt **Aufdecken** – auch wenn noch nicht alle gewählt haben.
-4. Ergebnis: alle Karten mit Namen, dazu Durchschnitt, Median und Spanne. Höchster und niedrigster Wert werden markiert, damit diese Personen ihre Sicht erklären können. Bei kompletter Einigkeit erscheint ein deutlicher Hinweis.
+4. Ergebnis: alle Karten mit Namen, dazu Durchschnitt, Median und Spanne. Höchster und niedrigster Wert werden markiert – bei mehreren gleichen Werten alle, damit diese Personen ihre Sicht erklären können. Bei kompletter Einigkeit erscheint ein deutlicher Hinweis.
 5. Nach dem Aufdecken sind die Karten gesperrt.
 6. **Alle zurücksetzen** löscht alle Schätzungen für das nächste Ticket; die Teilnehmer bleiben im Raum.
 
@@ -57,7 +57,8 @@ Corporate Design **GY Utility** (Design System in Claude):
 - Icons: Google Material Symbols, Weight 200, nicht gefüllt.
 - Sprache Deutsch, keine Emojis in der Oberfläche; die Kaffeetassen-Karte nutzt das Material-Symbols-Icon.
 - Funktioniert auf Laptop und Smartphone.
-- **Logo:** lädt der Superadmin im Admin-Bereich hoch (PNG, JPG, WebP oder SVG, max. 1 MB); es erscheint oben rechts. Ohne Logo steht dort der Schriftzug „Wilkenpoker“.
+- **Logo:** lädt der Superadmin im Admin-Bereich hoch (PNG, JPG, WebP oder SVG, max. 1 MB); es steht links oben in der Ecke und ersetzt die Purple-Kurve. Ohne Logo bleibt die Kurve.
+- Keine Rundennummer in der Oberfläche; neben „Deine Karte“ steht, wie viele schon gewählt haben.
 - Schriften und Icons werden lokal ausgeliefert, nicht von Google-Servern geladen (DSGVO).
 
 ## Sicherheit
@@ -73,6 +74,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 - **Abhängigkeiten:** möglichst wenige; `npm audit` in der CI, Dependabot für Updates.
 - **Datenschutz:** Namen nur im Arbeitsspeicher, nicht in Logs; kein Tracking, keine externen Dienste.
 - **Betrieb:** keine Portweiterleitung am Router; die ZimaOS-Oberfläche bleibt intern.
+- **Zugriff von außen** über den bestehenden Cloudflare Tunnel mit eigener Subdomain (HTTPS durch Cloudflare). Die Verwaltung ist über den Tunnel nicht erreichbar (404), nur direkt aus dem Heimnetz (`ADMIN_NETWORKS`). Die echte Client-Adresse kommt aus `CF-Connecting-IP`, damit Sperren nur den Verursacher treffen.
 
 ## Arbeitsweise
 
@@ -86,7 +88,8 @@ Corporate Design **GY Utility** (Design System in Claude):
 - **Frontend:** schlanke Web-Oberfläche ohne schweres Framework.
 - **Persistenz:** eine JSON-Datei für Räume auf einem Volume.
 - **Betrieb:** ein Docker-Container plus `docker-compose.yml` für ZimaOS.
-  - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`.
+  - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`, optional `ADMIN_NETWORKS`, `TRUSTED_PROXIES`.
+  - Image `ghcr.io/drdanone/wilkenpoker`, öffentlich, gebaut von GitHub Actions.
   - Volume: `/data`.
 
 ## Umsetzung in Schritten
@@ -97,4 +100,4 @@ Corporate Design **GY Utility** (Design System in Claude):
 
 ## Offene Punkte
 
-- Zugriff für die Entwickler (Heimnetz / VPN / Tunnel) – wird nach Schritt 2 geklärt.
+- Keine. Anleitung für Installation, Cloudflare Tunnel, Update und Sicherung: `docs/ZIMAOS.md`.
