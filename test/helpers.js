@@ -31,6 +31,7 @@ export async function startTestServer({ env = {}, deps = {} } = {}) {
     baseUrl: `http://127.0.0.1:${port}`,
     wsUrl: `ws://127.0.0.1:${port}/ws`,
     rooms,
+    hub: app.hub,
     dataDir,
     async close() {
       await app.close();

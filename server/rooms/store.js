@@ -33,6 +33,7 @@ export class RoomError extends Error {
  * Schätzungen werden hier bewusst nicht gespeichert.
  *
  * Ereignisse:
+ * - `renamed` (room) – Raum wurde umbenannt
  * - `codeChanged` (room, oldCode) – Code wurde neu erzeugt
  * - `deleted` (room) – Raum wurde gelöscht
  */
@@ -139,6 +140,7 @@ export class RoomStore extends EventEmitter {
     await this.#persistOrRollback(() => {
       room.name = oldName;
     });
+    this.emit('renamed', { ...room });
     return { ...room };
   }
 
