@@ -184,7 +184,6 @@ function renderState({ room, round, revealed, participants, yourVote, result }) 
 
   $('#room-title').textContent = room.name;
   document.title = `${room.name} – Wilkenpoker`;
-  $('#round-title').textContent = `Runde ${round}`;
 
   const voted = participants.filter((p) => p.voted).length;
   $('#progress').textContent = revealed
