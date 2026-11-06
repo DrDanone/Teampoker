@@ -12,7 +12,7 @@ Planning-Poker-Website für die wöchentlichen Refinements. Teams schätzen verd
 
 | Rolle | Zugang | Rechte |
 |---|---|---|
-| Superadmin (Markus) | `/admin`, Passwort aus Umgebungsvariable `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen |
+| Superadmin (Markus) | `/admin`, Passwort aus Umgebungsvariable `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen; Logo hochladen |
 | Teilnehmer | Raum-Code + Name | Schätzen, aufdecken, alle Schätzungen zurücksetzen |
 
 Alle Teilnehmer eines Raums sind gleichberechtigt. Es gibt keinen Zuschauer-Modus – jeder schätzt mit; wer nicht schätzen will, nimmt die Kaffeetasse.
@@ -55,8 +55,30 @@ Corporate Design **GY Utility** (Design System in Claude):
 - Schrift: Aptos, Fallback Segoe UI / Helvetica / Arial.
 - Flächige Formen mit abgerundeten Ecken, keine Schatten, keine Verläufe.
 - Icons: Google Material Symbols, Weight 200, nicht gefüllt.
-- Sprache Deutsch, keine Emojis in der Oberfläche (Ausnahme: Kaffeetassen-Karte als Icon).
+- Sprache Deutsch, keine Emojis in der Oberfläche; die Kaffeetassen-Karte nutzt das Material-Symbols-Icon.
 - Funktioniert auf Laptop und Smartphone.
+- **Logo:** lädt der Superadmin im Admin-Bereich hoch (PNG, JPG, WebP oder SVG, max. 1 MB); es erscheint oben rechts. Ohne Logo steht dort der Schriftzug „Wilkenpoker“.
+- Schriften und Icons werden lokal ausgeliefert, nicht von Google-Servern geladen (DSGVO).
+
+## Sicherheit
+
+- **HTTPS**, sobald der Zugriff über das Heimnetz hinausgeht (über Tunnel oder Reverse Proxy). Ohne HTTPS gehen Admin-Passwort und Raum-Codes im Klartext übers Netz.
+- **Admin-Login:** starkes Passwort aus Umgebungsvariable, zeitkonstanter Vergleich, Sperre nach Fehlversuchen, Session-Cookie `HttpOnly`, `SameSite=Strict`, `Secure` (hinter HTTPS), Ablauf nach Inaktivität.
+- **Raum-Codes** mit kryptografischem Zufall; Sperre nach zu vielen Fehlversuchen.
+- **Logo-Upload** ist die größte Angriffsfläche: Dateityp über die Dateisignatur prüfen, SVG bereinigen (Skripte, Event-Handler, externe Verweise entfernen), eigener Dateiname, Auslieferung mit `X-Content-Type-Options: nosniff` und restriktiver CSP.
+- **Eingaben:** Namen auf Länge und Zeichen prüfen, nie als HTML ausgeben (Schutz vor XSS). Jede WebSocket-Nachricht serverseitig validieren.
+- **WebSocket:** Origin-Prüfung, Größen- und Ratenlimit pro Verbindung, maximale Teilnehmerzahl pro Raum.
+- **HTTP-Header:** Content-Security-Policy, `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy: no-referrer` (der Einladungslink enthält den Code).
+- **Container:** schlankes Basis-Image, läuft nicht als root, Dateisystem schreibgeschützt bis auf `/data`, keine Geheimnisse im Image.
+- **Abhängigkeiten:** möglichst wenige; `npm audit` in der CI, Dependabot für Updates.
+- **Datenschutz:** Namen nur im Arbeitsspeicher, nicht in Logs; kein Tracking, keine externen Dienste.
+- **Betrieb:** keine Portweiterleitung am Router; die ZimaOS-Oberfläche bleibt intern.
+
+## Arbeitsweise
+
+- Jedes Arbeitspaket ist ein GitHub-Issue.
+- Pro Arbeitspaket ein eigener Branch und ein Pull Request, der das Issue referenziert.
+- Gemergt wird erst nach Code Review.
 
 ## Technik
 
@@ -76,4 +98,3 @@ Corporate Design **GY Utility** (Design System in Claude):
 ## Offene Punkte
 
 - Zugriff für die Entwickler (Heimnetz / VPN / Tunnel) – wird nach Schritt 2 geklärt.
-- GY-Utility-Logo als SVG (`gy-utility-purple.svg`) für die Kopfzeile.
