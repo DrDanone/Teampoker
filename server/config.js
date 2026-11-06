@@ -1,5 +1,7 @@
 import path from 'node:path';
 
+import { PRIVATE_NETWORKS, parseNetworks } from './network.js';
+
 const DEFAULT_PORT = 3000;
 export const MIN_ADMIN_PASSWORD_LENGTH = 12;
 
@@ -9,6 +11,11 @@ export const MIN_ADMIN_PASSWORD_LENGTH = 12;
  * - PORT:           TCP-Port des Servers (Standard 3000)
  * - DATA_DIR:       Verzeichnis für dauerhafte Daten (Standard ./data)
  * - ADMIN_PASSWORD: Passwort des Superadmins, Pflicht, mind. 12 Zeichen
+ * - ADMIN_NETWORKS: Netze, aus denen die Verwaltung erreichbar ist
+ *                   (Standard: private Netze; `*` = überall). Über Tunnel
+ *                   oder Proxy ist die Verwaltung nie erreichbar.
+ * - TRUSTED_PROXIES: Netze der Proxys/Tunnel, deren weitergegebene
+ *                   Client-Adresse übernommen wird (Standard: private Netze)
  *
  * @param {NodeJS.ProcessEnv} env
  */
@@ -17,6 +24,8 @@ export function loadConfig(env = process.env) {
     port: parsePort(env.PORT),
     dataDir: path.resolve(env.DATA_DIR || './data'),
     adminPassword: parseAdminPassword(env.ADMIN_PASSWORD),
+    adminNetworks: parseNetworks(env.ADMIN_NETWORKS || PRIVATE_NETWORKS, 'ADMIN_NETWORKS'),
+    trustedProxies: parseNetworks(env.TRUSTED_PROXIES || PRIVATE_NETWORKS, 'TRUSTED_PROXIES'),
   };
 }
 

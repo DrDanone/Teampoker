@@ -4,19 +4,30 @@ Wilkenpoker läuft als ein Docker-Container. Diese Anleitung beschreibt die Inst
 
 ## Überblick
 
-| Was                 | Wert                                            |
-| ------------------- | ----------------------------------------------- |
-| Image               | `ghcr.io/drdanone/wilkenpoker:latest`           |
-| Port im Container   | `3000` (in der Compose-Datei auf `8090` gelegt) |
-| Daten (Räume, Logo) | Volume `/data` → `/DATA/AppData/wilkenpoker`    |
-| Pflicht-Einstellung | `ADMIN_PASSWORD`, mindestens 12 Zeichen         |
-| Verwaltung          | `http://<server>:8090/admin/`                   |
+| Was                  | Wert                                                      |
+| -------------------- | --------------------------------------------------------- |
+| Image                | `ghcr.io/drdanone/wilkenpoker:latest`                     |
+| Port im Container    | `3000` (in der Compose-Datei auf `8090` gelegt)           |
+| Daten (Räume, Logo)  | Volume `/data` → `/DATA/AppData/wilkenpoker`              |
+| Pflicht-Einstellung  | `ADMIN_PASSWORD`, mindestens 12 Zeichen                   |
+| Verwaltung           | `http://<server>:8090/admin/` – **nur im Heimnetz**       |
+| Zugriff für das Team | `https://poker.<deine-domain>` über den Cloudflare Tunnel |
 
 Das Image wird von GitHub Actions bei jedem Merge auf `main` gebaut (für `amd64` und `arm64`) und in der GitHub Container Registry veröffentlicht. Vorher läuft ein Rauchtest (`scripts/docker-smoke.sh`).
 
-## 1. Zugriff auf das Image
+## 1. Image öffentlich stellen (einmalig)
 
-Das Repository ist privat, deshalb ist auch das Image privat. ZimaOS muss sich einmalig bei GitHub anmelden:
+Das Image wird beim ersten Merge auf `main` veröffentlicht – zunächst privat, weil das Repository privat ist. Damit ZimaOS es ohne Token laden kann, die Sichtbarkeit einmalig umstellen:
+
+1. Auf GitHub ins eigene Profil → Reiter **Packages** → **wilkenpoker**.
+2. **Package settings** → ganz unten **Change visibility** → **Public** → mit dem Paketnamen bestätigen.
+
+Danach kann jeder das Image laden und den Code darin einsehen; das Repository selbst (Issues, Historie) bleibt privat. Geheimnisse stehen nicht im Image – das Passwort kommt erst über die Compose-Datei hinzu.
+
+<details>
+<summary>Alternative: privates Image mit Token</summary>
+
+Das Repository ist privat, deshalb ist auch das Image zunächst privat. ZimaOS kann sich dann einmalig bei GitHub anmelden:
 
 1. Auf GitHub unter **Settings → Developer settings → Personal access tokens → Tokens (classic)** ein Token mit nur dem Recht **`read:packages`** erzeugen.
 2. Per SSH auf dem ZimaOS-Server anmelden und ausführen:
@@ -26,7 +37,7 @@ Das Repository ist privat, deshalb ist auch das Image privat. ZimaOS muss sich e
    # als Passwort das Token einfügen
    ```
 
-Alternative ohne Token: Unter **GitHub → Packages → wilkenpoker → Package settings** die Sichtbarkeit auf „Public“ stellen. Dann ist der Code im Image für jeden abrufbar – das Repository selbst bleibt privat.
+</details>
 
 ## 2. Datenordner anlegen
 
@@ -97,14 +108,47 @@ docker logs wilkenpoker          # Meldungen beim Start
 docker inspect --format '{{.State.Health.Status}}' wilkenpoker   # healthy?
 ```
 
-| Meldung                                     | Ursache und Lösung                      |
-| ------------------------------------------- | --------------------------------------- |
-| `ADMIN_PASSWORD ist nicht gesetzt`          | Passwort in der Compose-Datei eintragen |
-| `muss mindestens 12 Zeichen lang sein`      | längeres Passwort wählen                |
-| `Datenverzeichnis … ist nicht beschreibbar` | Schritt 2 (chown 1000:1000) ausführen   |
-| `rooms.json ist beschädigt`                 | Datei aus der Sicherung zurückspielen   |
-| `pull access denied` beim Installieren      | Schritt 1 (docker login) ausführen      |
+| Meldung                                     | Ursache und Lösung                                                                         |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `ADMIN_PASSWORD ist nicht gesetzt`          | Passwort in der Compose-Datei eintragen                                                    |
+| `muss mindestens 12 Zeichen lang sein`      | längeres Passwort wählen                                                                   |
+| `Datenverzeichnis … ist nicht beschreibbar` | Schritt 2 (chown 1000:1000) ausführen                                                      |
+| `rooms.json ist beschädigt`                 | Datei aus der Sicherung zurückspielen                                                      |
+| `pull access denied` beim Installieren      | Schritt 1 (Image öffentlich stellen) prüfen                                                |
+| `/admin/` zeigt „Nicht gefunden“            | Verwaltung nur direkt im Heimnetz: `http://<server-ip>:8090/admin/`, nicht über die Domain |
 
-## Zugriff von außen
+## Zugriff von außen über den Cloudflare Tunnel
 
-Die Compose-Datei öffnet den Port nur im Heimnetz. Wie die Entwickler von außen zugreifen (VPN oder Tunnel mit HTTPS), wird in Issue #10 entschieden. Bitte **keine Portweiterleitung am Router** einrichten.
+Die Entwickler erreichen Wilkenpoker über den bestehenden Cloudflare Tunnel unter einer eigenen Subdomain, z. B. `https://poker.<deine-domain>`. HTTPS übernimmt Cloudflare. Am Router wird **kein Port** freigegeben.
+
+### Public Hostname anlegen
+
+1. [Cloudflare Zero Trust](https://one.dash.cloudflare.com) → **Networks → Tunnels** → den bestehenden Tunnel → **Public Hostname** (bzw. „Published application routes“) → **Add**.
+2. Eintragen:
+   - **Subdomain:** `poker` (oder nach Wunsch), **Domain:** deine Domain
+   - **Service:** Typ `HTTP`, URL `<ZimaOS-IP>:8090` (läuft `cloudflared` als Container im selben Docker-Netz wie Wilkenpoker, geht auch `wilkenpoker:3000`)
+3. Unter **Additional application settings → HTTP Settings** das Feld **HTTP Host Header leer lassen**. Wilkenpoker prüft, dass Anfragen von der eigenen Domain kommen; ein überschriebener Host-Header würde das stören.
+4. Speichern.
+
+### Einstellungen der Domain prüfen
+
+Im Cloudflare-Dashboard der Domain:
+
+- **Network → WebSockets:** an (Standard). Ohne WebSockets gibt es keine Live-Aktualisierung.
+- **SSL/TLS → Edge Certificates → Always Use HTTPS:** an.
+
+### Testen
+
+- `https://poker.<deine-domain>` zeigt „Raum beitreten“.
+- `https://poker.<deine-domain>/admin/` zeigt **„Nicht gefunden“** – so soll es sein.
+- Die Verwaltung im Heimnetz unter `http://<ZimaOS-IP>:8090/admin/` öffnen.
+
+### Wie die Verwaltung geschützt ist
+
+Wilkenpoker erkennt Anfragen über den Tunnel an dem Header `CF-Connecting-IP`, den Cloudflare immer setzt und den ein Angreifer nicht unterdrücken kann. Für solche Anfragen gibt es die Verwaltung nicht (Antwort 404). Direkt erreichbar ist sie nur aus den Netzen in `ADMIN_NETWORKS` – standardmäßig die privaten Netze (Heimnetz, Docker). Zusätzlich braucht es weiterhin das Passwort.
+
+Über den Header ermittelt Wilkenpoker auch die echte Adresse der Teilnehmer. Die Sperren nach falschen Codes treffen deshalb nur den Verursacher und nicht alle, die über den Tunnel kommen.
+
+### Optional: nur für Kolleginnen und Kollegen
+
+Mit **Cloudflare Access** (Zero Trust → Access → Applications) lässt sich vor `poker.<deine-domain>` eine Anmeldung per E-Mail-Code schalten, z. B. nur für Adressen der Firmen-Domain. Wilkenpoker braucht dafür keine Änderung.

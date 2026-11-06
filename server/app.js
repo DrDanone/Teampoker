@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createAdminApi, logoInfo } from './admin/routes.js';
 import { sendJson, sendText } from './http.js';
+import { isAdminAllowed, resolveClientIp } from './network.js';
 import { PokerHub } from './poker/hub.js';
 import { applySecurityHeaders } from './security.js';
 import { createStaticHandler } from './static.js';
@@ -40,6 +41,14 @@ export function createApp(
 
   async function handleRequest(req, res) {
     const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+
+    // Die Verwaltung gibt es nur im Heimnetz. Von außen (Tunnel) sieht sie
+    // aus, als gäbe es sie nicht.
+    if (isAdminPath(pathname) && !isAdminAllowed(req, config.adminNetworks)) {
+      if (pathname.startsWith('/api/')) sendJson(res, 404, { error: 'Nicht gefunden' });
+      else sendText(res, 404, 'Nicht gefunden');
+      return;
+    }
 
     if (await handleAdminApi(req, res, pathname)) return;
     if (pathname === '/api/branding' && req.method === 'GET') {
@@ -84,6 +93,7 @@ export function createApp(
 
   const server = http.createServer(async (req, res) => {
     applySecurityHeaders(req, res);
+    req.clientIp = resolveClientIp(req, config.trustedProxies);
     try {
       await handleRequest(req, res);
     } catch (error) {
@@ -93,6 +103,10 @@ export function createApp(
     }
   });
 
+  // WebSocket-Upgrades laufen am Request-Handler vorbei – Client-Adresse hier setzen.
+  server.prependListener('upgrade', (req) => {
+    req.clientIp = resolveClientIp(req, config.trustedProxies);
+  });
   const wss = attachWebSocket(server, { hub, ...wsOptions });
 
   // Langsame oder hängende Anfragen nicht ewig offen halten.
@@ -134,4 +148,26 @@ function serveLogo(req, res, current) {
   }
   res.writeHead(200, { ...headers, 'Content-Length': current.data.length });
   res.end(req.method === 'HEAD' ? undefined : current.data);
+}
+
+/**
+ * Ob der Pfad zur Verwaltung gehört. Geprüft wird auch die dekodierte Form,
+ * damit z. B. `/%61dmin/` nicht an der Sperre vorbei ausgeliefert wird.
+ */
+export function isAdminPath(pathname) {
+  let decoded;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    decoded = pathname;
+  }
+  return [pathname, decoded].some((path) => {
+    const lower = path.toLowerCase();
+    return (
+      lower === '/admin' ||
+      lower.startsWith('/admin/') ||
+      lower === '/api/admin' ||
+      lower.startsWith('/api/admin/')
+    );
+  });
 }

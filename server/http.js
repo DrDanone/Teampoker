@@ -106,6 +106,7 @@ export function isHttps(req) {
   );
 }
 
+/** Client-Adresse; wird pro Anfrage in app.js über `resolveClientIp` gesetzt. */
 export function clientIp(req) {
-  return req.socket.remoteAddress ?? 'unbekannt';
+  return req.clientIp ?? req.socket.remoteAddress ?? 'unbekannt';
 }

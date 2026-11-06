@@ -4,8 +4,8 @@ import WebSocket from 'ws';
  * Testclient für das WebSocket-Protokoll: sammelt eingehende Nachrichten
  * und wartet gezielt auf bestimmte.
  */
-export async function connectClient(url) {
-  const ws = new WebSocket(url);
+export async function connectClient(url, headers = {}) {
+  const ws = new WebSocket(url, { headers });
   const messages = [];
   const waiters = [];
   let closeInfo = null;
