@@ -43,6 +43,24 @@ export async function readJson(req, limit = MAX_JSON_BODY_BYTES) {
   }
 }
 
+/**
+ * Liest einen Body als Buffer mit Größenlimit.
+ *
+ * @param {import('node:http').IncomingMessage} req
+ */
+export async function readRaw(req, limit, tooLargeMessage = 'Anfrage zu groß') {
+  const declared = Number(req.headers['content-length']);
+  if (Number.isFinite(declared) && declared > limit) throw new HttpError(413, tooLargeMessage);
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of req) {
+    size += chunk.length;
+    if (size > limit) throw new HttpError(413, tooLargeMessage);
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
 export function sendJson(res, status, payload, headers = {}) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {

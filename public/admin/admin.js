@@ -1,7 +1,17 @@
 // Verwaltung der Räume durch den Superadmin.
 // Alle Texte werden über textContent gesetzt, nie als HTML.
 
+import { loadBranding, showLogo } from '../branding.js';
+
 const $ = (selector) => document.querySelector(selector);
+
+const LOGO_TYPES = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+};
 
 let csrfToken = '';
 
@@ -34,6 +44,7 @@ function showLogin(message = '') {
   csrfToken = '';
   $('#login-view').hidden = false;
   $('#rooms-view').hidden = true;
+  $('#logo-view').hidden = true;
   $('#logout').hidden = true;
   setStatus(message, Boolean(message));
   $('#password').focus();
@@ -42,8 +53,9 @@ function showLogin(message = '') {
 async function showRooms() {
   $('#login-view').hidden = true;
   $('#rooms-view').hidden = false;
+  $('#logo-view').hidden = false;
   $('#logout').hidden = false;
-  await loadRooms();
+  await Promise.all([loadRooms(), loadLogo()]);
 }
 
 async function loadRooms() {
@@ -52,6 +64,57 @@ async function loadRooms() {
   list.replaceChildren(...rooms.map(renderRoom));
   $('#empty').hidden = rooms.length > 0;
 }
+
+async function loadLogo() {
+  const res = await fetch('/api/branding');
+  const { logo } = await res.json();
+  renderLogo(logo);
+}
+
+function renderLogo(logo) {
+  const preview = $('#logo-preview');
+  preview.hidden = !logo;
+  if (logo) preview.src = logo.url;
+  else preview.removeAttribute('src');
+  $('#logo-none').hidden = Boolean(logo);
+  $('#logo-remove').hidden = !logo;
+  showLogo(logo);
+}
+
+$('#logo-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const file = $('#logo-file').files[0];
+  if (!file) return;
+  // Manche Browser liefern für SVG keinen oder einen anderen Typ – dann nach Endung.
+  const extension = file.name.split('.').pop().toLowerCase();
+  const type = LOGO_TYPES[extension] ?? file.type;
+  try {
+    const res = await fetch('/api/admin/logo', {
+      method: 'PUT',
+      headers: { 'content-type': type, 'x-csrf-token': csrfToken },
+      body: file,
+      credentials: 'same-origin',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) return showLogin('Bitte erneut anmelden.');
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
+    renderLogo(data.logo);
+    $('#logo-file').value = '';
+    setStatus('Logo gespeichert.');
+  } catch (error) {
+    setStatus(error.message, true);
+  }
+});
+
+$('#logo-remove').addEventListener('click', async () => {
+  try {
+    await api('DELETE', '/logo');
+    renderLogo(null);
+    setStatus('Logo entfernt.');
+  } catch (error) {
+    setStatus(error.message, true);
+  }
+});
 
 function inviteLink(code) {
   return `${location.origin}/join/${code}`;
@@ -190,6 +253,7 @@ $('#logout').addEventListener('click', async () => {
 });
 
 async function init() {
+  loadBranding();
   try {
     const session = await api('GET', '/session');
     if (session.authenticated) {

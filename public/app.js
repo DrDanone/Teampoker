@@ -1,5 +1,7 @@
 // Oberfläche für Teilnehmer. Alle Texte werden über textContent gesetzt, nie als HTML.
 
+import { loadBranding } from './branding.js';
+
 const $ = (selector) => document.querySelector(selector);
 
 const NAME_KEY = 'wilkenpoker:name';
@@ -317,6 +319,7 @@ $('#join-form').addEventListener('submit', (event) => {
 $('#leave').addEventListener('click', () => send({ type: 'leave' }));
 
 function init() {
+  loadBranding();
   buildCards();
   const match = location.pathname.match(/^\/join\/([A-Za-z0-9-]+)\/?$/);
   // Der Code soll nicht in der Adresszeile stehen bleiben (Bildschirmfreigabe im Refinement).

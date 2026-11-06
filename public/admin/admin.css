@@ -156,3 +156,38 @@ input:focus-visible {
 [hidden] {
   display: none !important;
 }
+
+.logo-slot {
+  display: flex;
+  align-items: center;
+}
+
+/* Feste Höhe, damit auch SVGs ohne eigene Größenangabe sichtbar sind. */
+.logo {
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-preview {
+  display: flex;
+  align-items: center;
+  min-height: 80px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 2px dashed var(--gray-300);
+  border-radius: 16px;
+}
+
+.logo-preview img {
+  max-height: 80px;
+  max-width: 100%;
+}
