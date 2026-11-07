@@ -1,6 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 
 import { safeEqual } from '../admin/sessions.js';
+import { evaluate, isCard } from './cards.js';
 import { PokerError, cleanParticipantName, nameKey } from './names.js';
 
 export const MAX_PARTICIPANTS = 30;
@@ -13,15 +14,19 @@ export const MAX_PARTICIPANTS = 30;
  * @property {Set<object>} sockets offene Verbindungen (mehrere Tabs möglich)
  * @property {number} joinedAt
  * @property {number | null} offlineSince
+ * @property {string | null} vote gewählte Karte der laufenden Runde
  */
 
 /**
  * Laufender Zustand eines Raums im Arbeitsspeicher: wer ist da, wer ist
- * online. Nichts davon wird gespeichert.
+ * online, wer hat was geschätzt. Nichts davon wird gespeichert.
  */
 export class RoomSession {
   /** @type {Map<string, Participant>} */
   participants = new Map();
+  /** Nummer der Runde; steigt mit jedem Zurücksetzen. */
+  round = 1;
+  revealed = false;
   #now;
   #maxParticipants;
 
@@ -74,6 +79,7 @@ export class RoomSession {
       sockets: new Set(),
       joinedAt: this.#now(),
       offlineSince: this.#now(),
+      vote: null,
     };
     this.participants.set(participant.id, participant);
     return participant;
@@ -113,6 +119,75 @@ export class RoomSession {
       }
     }
     return removed;
+  }
+
+  /**
+   * Setzt oder entfernt (`null`) die Karte eines Teilnehmers.
+   * Nach dem Aufdecken sind die Karten gesperrt.
+   */
+  vote(participant, value) {
+    if (this.revealed) {
+      throw new PokerError(
+        'locked',
+        'Die Karten sind aufgedeckt. Erst zurücksetzen, dann neu schätzen.',
+      );
+    }
+    if (value !== null && !isCard(value)) {
+      throw new PokerError('invalid-message', 'Diese Karte gibt es nicht');
+    }
+    participant.vote = value;
+  }
+
+  /**
+   * Deckt die Karten der Runde `round` auf.
+   *
+   * @returns {boolean} ob sich etwas geändert hat (doppelte Klicks und
+   *   veraltete Runden werden ignoriert)
+   */
+  reveal(round) {
+    if (round !== this.round || this.revealed) return false;
+    this.revealed = true;
+    return true;
+  }
+
+  /**
+   * Löscht alle Schätzungen und beginnt eine neue Runde, sofern `round`
+   * die aktuelle ist – so führen gleichzeitige Klicks nur zu einem Reset.
+   *
+   * @returns {boolean} ob sich etwas geändert hat
+   */
+  reset(round) {
+    if (round !== this.round) return false;
+    for (const participant of this.participants.values()) participant.vote = null;
+    this.revealed = false;
+    this.round += 1;
+    return true;
+  }
+
+  /**
+   * Zustand aus Sicht eines Teilnehmers. Vor dem Aufdecken enthält er nur,
+   * **ob** jemand gewählt hat – die eigene Karte ausgenommen.
+   *
+   * @param {Participant | null} viewer
+   */
+  stateFor(viewer) {
+    const participants = this.publicParticipants().map((p) => {
+      const { vote } = this.participants.get(p.id);
+      return {
+        ...p,
+        voted: vote !== null,
+        ...(this.revealed ? { vote } : {}),
+      };
+    });
+    return {
+      round: this.round,
+      revealed: this.revealed,
+      participants,
+      yourVote: viewer?.vote ?? null,
+      result: this.revealed
+        ? evaluate([...this.participants.values()].map(({ id, vote }) => ({ id, vote })))
+        : null,
+    };
   }
 
   get isEmpty() {

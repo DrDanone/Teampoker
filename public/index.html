@@ -37,7 +37,44 @@
       </section>
 
       <section id="room-view" hidden>
-        <h2>Im Raum</h2>
+        <div class="round-bar">
+          <h2 id="round-title">Runde 1</h2>
+          <span id="progress" class="progress"></span>
+        </div>
+
+        <section aria-labelledby="cards-title">
+          <h3 id="cards-title" class="visually-hidden">Deine Karte</h3>
+          <p id="cards-hint" class="hint">
+            Wähle deine Karte. Bis zum Aufdecken kannst du sie ändern.
+          </p>
+          <div id="cards" class="cards" role="group" aria-labelledby="cards-title"></div>
+        </section>
+
+        <div class="round-actions">
+          <button id="reveal" type="button">Aufdecken</button>
+          <button id="reset" type="button" class="button-secondary">Alle zurücksetzen</button>
+        </div>
+
+        <section id="result" class="result" hidden aria-live="polite">
+          <p id="consensus" class="consensus" hidden>Einigkeit!</p>
+          <dl class="stats">
+            <div>
+              <dt>Durchschnitt</dt>
+              <dd id="stat-average">–</dd>
+            </div>
+            <div>
+              <dt>Median</dt>
+              <dd id="stat-median">–</dd>
+            </div>
+            <div>
+              <dt>Spanne</dt>
+              <dd id="stat-spread">–</dd>
+            </div>
+          </dl>
+          <p id="stat-note" class="hint"></p>
+        </section>
+
+        <h3>Teilnehmer</h3>
         <ul id="participants" class="participants"></ul>
         <button id="leave" type="button" class="button-secondary">Raum verlassen</button>
       </section>

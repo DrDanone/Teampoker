@@ -8,6 +8,8 @@ import { FailureLimiter } from '../server/ratelimit.js';
 import { startTestServer } from './helpers.js';
 import { connectClient, eventually } from './ws-client.js';
 
+const pick = ({ id, name, online }) => ({ id, name, online });
+
 describe('Raum beitreten', () => {
   let server;
   let room;
@@ -48,7 +50,9 @@ describe('Raum beitreten', () => {
 
     const state = await anna.next('state');
     assert.deepEqual(state.room, { name: 'Team ESM' });
-    assert.deepEqual(state.participants, [{ id: joined.you, name: 'Anna', online: true }]);
+    assert.deepEqual(state.participants.map(pick), [
+      { id: joined.you, name: 'Anna', online: true },
+    ]);
   });
 
   it('akzeptiert den Code in Kleinbuchstaben und mit Leerzeichen', async () => {
@@ -87,7 +91,7 @@ describe('Raum beitreten', () => {
     const b = await ben.join(room.code, 'Ben');
 
     const state = await anna.next('state', (s) => s.participants.length === 2);
-    assert.deepEqual(state.participants, [
+    assert.deepEqual(state.participants.map(pick), [
       { id: a.you, name: 'Anna', online: true },
       { id: b.you, name: 'Ben', online: true },
     ]);
