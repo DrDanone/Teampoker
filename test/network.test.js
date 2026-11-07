@@ -22,6 +22,25 @@ function rawRequest(baseUrl, path, { method = 'GET', headers = {}, body } = {}) 
   });
 }
 
+/** Wie rawRequest, liefert aber Status und Inhalt. */
+function rawFetch(baseUrl, path, headers = {}) {
+  const { hostname, port } = new URL(baseUrl);
+  return new Promise((resolve, reject) => {
+    const req = http.request({ hostname, port, path, headers }, (res) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () =>
+        resolve({ status: res.statusCode, body: Buffer.concat(chunks).toString('utf8') }),
+      );
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/** Erkennungszeichen der Verwaltungs-Dateien (HTML, Skript, Stylesheet). */
+const ADMIN_MARKERS = /admin\.js|logo-form|x-csrf-token|\.create-form/;
+
 const fakeReq = (remoteAddress, headers = {}) => ({ socket: { remoteAddress }, headers });
 
 describe('Netze', () => {
@@ -79,6 +98,13 @@ describe('Netze', () => {
     '/ADMIN/',
     '/api/admin/login',
     '/api/%61dmin/rooms',
+    '/%2fadmin/',
+    '/.%2fadmin/',
+    '/x/..%2fadmin/admin.js',
+    '/%2e/admin/',
+    '/x/%2e%2e/admin/admin.css',
+    '//admin/',
+    '/api/x/..%2fadmin/session',
   ]) {
     it(`erkennt Verwaltungspfad ${path}`, () => {
       assert.equal(isAdminPath(path), true);
@@ -122,6 +148,10 @@ describe('Verwaltung nur im Heimnetz', () => {
           '/admin/',
           '/admin/admin.js',
           '/%61dmin/admin.js',
+          '/%2fadmin/',
+          '/.%2fadmin/',
+          '/x/..%2fadmin/admin.js',
+          '/x/%2e%2e/admin/admin.css',
           '/api/admin/session',
         ]) {
           assert.equal(await rawRequest(server.baseUrl, path, { headers }), 404, path);
@@ -177,5 +207,98 @@ describe('Verwaltung nur im Heimnetz', () => {
 
     attacker.ws.terminate();
     colleague.ws.terminate();
+  });
+});
+
+describe('Verwaltungs-Sperre gegen Pfad-Tricks', () => {
+  let server;
+  beforeEach(async () => {
+    server = await startTestServer();
+  });
+  afterEach(() => server.close());
+
+  it('liefert über den Tunnel keine Datei aus public/admin aus, egal wie der Pfad geschrieben ist', async () => {
+    const headers = { 'cf-connecting-ip': '93.184.216.34' };
+    const prefixes = ['', '/x/..', '/.', '/x/%2e%2e', '/%2e', '/x/y/../..'];
+    const slashes = ['/', '%2f', '%2F', '//'];
+    const names = ['admin', '%61dmin', 'ADMIN', 'adm%69n'];
+    const files = ['', 'index.html', 'admin.js', 'admin.css'];
+    let checked = 0;
+    for (const prefix of prefixes) {
+      for (const slash of slashes) {
+        for (const name of names) {
+          for (const file of files) {
+            const target = `${prefix}${slash}${name}/${file}`;
+            const path = target.startsWith('/') ? target : `/${target}`;
+            const { status, body } = await rawFetch(server.baseUrl, path, headers);
+            assert.ok(
+              status !== 200 || !ADMIN_MARKERS.test(body),
+              `${path} lieferte Verwaltung aus`,
+            );
+            checked += 1;
+          }
+        }
+      }
+    }
+    assert.equal(checked, 384);
+  });
+
+  it('erkennt die Verwaltung an ihren Merkmalen (Gegenprobe im Heimnetz)', async () => {
+    for (const path of ['/admin/', '/admin/admin.js', '/admin/admin.css']) {
+      const { status, body } = await rawFetch(server.baseUrl, path);
+      assert.equal(status, 200, path);
+      assert.match(body, ADMIN_MARKERS, path);
+    }
+  });
+
+  it('lässt normale Seiten über den Tunnel durch', async () => {
+    const headers = { 'cf-connecting-ip': '93.184.216.34' };
+    for (const path of ['/', '/app.js', '/theme.css', '/join/ABCD2345']) {
+      assert.equal(await rawRequest(server.baseUrl, path, { headers }), 200, path);
+    }
+  });
+});
+
+describe('PUBLIC_URL', () => {
+  it('übernimmt eine gültige Adresse ohne Schrägstrich am Ende', () => {
+    const config = loadConfig({
+      ADMIN_PASSWORD: TEST_PASSWORD,
+      PUBLIC_URL: 'https://poker.example.de/',
+    });
+    assert.equal(config.publicUrl, 'https://poker.example.de');
+    assert.equal(loadConfig({ ADMIN_PASSWORD: TEST_PASSWORD }).publicUrl, '');
+  });
+
+  for (const value of [
+    'poker.example.de',
+    'ftp://poker.example.de',
+    'https://poker.example.de/raum',
+    'https://x@poker.example.de',
+  ]) {
+    it(`lehnt ungültige Angabe ab: ${value}`, () => {
+      assert.throws(
+        () => loadConfig({ ADMIN_PASSWORD: TEST_PASSWORD, PUBLIC_URL: value }),
+        /PUBLIC_URL/,
+      );
+    });
+  }
+
+  it('gibt die Adresse an die Verwaltung weiter', async () => {
+    const server = await startTestServer({ env: { PUBLIC_URL: 'https://poker.example.de' } });
+    try {
+      const res = await fetch(`${server.baseUrl}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: TEST_PASSWORD }),
+      });
+      assert.equal((await res.json()).publicUrl, 'https://poker.example.de');
+      const cookie = res.headers.get('set-cookie').split(';')[0];
+      const session = await (
+        await fetch(`${server.baseUrl}/api/admin/session`, { headers: { cookie } })
+      ).json();
+      assert.equal(session.publicUrl, 'https://poker.example.de');
+    } finally {
+      await server.close();
+    }
   });
 });

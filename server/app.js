@@ -29,12 +29,19 @@ export function createApp(
   config,
   { rooms, logo, sessions, loginLimiter, hubOptions = {}, wsOptions = {} },
 ) {
-  const serveStatic = createStaticHandler(PUBLIC_DIR);
+  // Zweite Sicherung: Dateien unter public/admin/ werden nur ausgeliefert,
+  // wenn die Verwaltung für diese Anfrage erlaubt ist – unabhängig davon,
+  // wie der Pfad geschrieben wurde.
+  const serveStatic = createStaticHandler(PUBLIC_DIR, {
+    isDenied: (req, relativePath) =>
+      isAdminFile(relativePath) && !isAdminAllowed(req, config.adminNetworks),
+  });
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
     rooms,
     logo,
     adminPassword: config.adminPassword,
+    publicUrl: config.publicUrl,
     sessions,
     loginLimiter,
   });
@@ -151,8 +158,10 @@ function serveLogo(req, res, current) {
 }
 
 /**
- * Ob der Pfad zur Verwaltung gehört. Geprüft wird auch die dekodierte Form,
- * damit z. B. `/%61dmin/` nicht an der Sperre vorbei ausgeliefert wird.
+ * Ob der Pfad zur Verwaltung gehört. Geprüft werden die rohe, die dekodierte
+ * und die normalisierte Form – so wie die statische Auslieferung den Pfad
+ * auflöst –, damit z. B. `/%61dmin/`, `/%2fadmin/` oder `/x/..%2fadmin/`
+ * nicht an der Sperre vorbei ausgeliefert werden.
  */
 export function isAdminPath(pathname) {
   let decoded;
@@ -161,8 +170,9 @@ export function isAdminPath(pathname) {
   } catch {
     decoded = pathname;
   }
-  return [pathname, decoded].some((path) => {
-    const lower = path.toLowerCase();
+  const normalized = path.posix.normalize(`/${decoded}`);
+  return [pathname, decoded, normalized].some((candidate) => {
+    const lower = candidate.toLowerCase();
     return (
       lower === '/admin' ||
       lower.startsWith('/admin/') ||
@@ -170,4 +180,9 @@ export function isAdminPath(pathname) {
       lower.startsWith('/api/admin/')
     );
   });
+}
+
+function isAdminFile(relativePath) {
+  const first = relativePath.split(/[\\/]/)[0].toLowerCase();
+  return first === 'admin';
 }

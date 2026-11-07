@@ -64,11 +64,13 @@ docker compose up -d
 
 Ohne `ADMIN_PASSWORD` startet Wilkenpoker absichtlich nicht.
 
+`PUBLIC_URL` auf die öffentliche Adresse setzen, z. B. `https://poker.<deine-domain>`. Die Verwaltung läuft nur im Heimnetz – ohne diese Angabe würden kopierte Einladungslinks auf die Heimnetz-Adresse zeigen und bei Kollegen außerhalb nicht funktionieren.
+
 ## 4. Erster Start
 
 1. `http://<server>:8090/admin/` öffnen und mit dem Passwort anmelden.
 2. Einen Raum pro Team anlegen.
-3. Code oder Einladungslink an das Team schicken.
+3. Code oder Einladungslink an das Team schicken (der Link nutzt `PUBLIC_URL`).
 4. Optional ein Logo hochladen.
 
 ## Update

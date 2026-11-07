@@ -12,8 +12,10 @@ export const MIN_ADMIN_PASSWORD_LENGTH = 12;
  * - DATA_DIR:       Verzeichnis für dauerhafte Daten (Standard ./data)
  * - ADMIN_PASSWORD: Passwort des Superadmins, Pflicht, mind. 12 Zeichen
  * - ADMIN_NETWORKS: Netze, aus denen die Verwaltung erreichbar ist
- *                   (Standard: private Netze; `*` = überall). Über Tunnel
- *                   oder Proxy ist die Verwaltung nie erreichbar.
+ *                   (Standard: private Netze). Über Tunnel oder Proxy ist sie
+ *                   dann nicht erreichbar. `*` = überall, auch über Tunnel/Proxy.
+ * - PUBLIC_URL:     öffentliche Adresse für Einladungslinks, z. B.
+ *                   https://poker.example.de (Standard: Adresse der Verwaltung)
  * - TRUSTED_PROXIES: Netze der Proxys/Tunnel, deren weitergegebene
  *                   Client-Adresse übernommen wird (Standard: private Netze)
  *
@@ -26,6 +28,7 @@ export function loadConfig(env = process.env) {
     adminPassword: parseAdminPassword(env.ADMIN_PASSWORD),
     adminNetworks: parseNetworks(env.ADMIN_NETWORKS || PRIVATE_NETWORKS, 'ADMIN_NETWORKS'),
     trustedProxies: parseNetworks(env.TRUSTED_PROXIES || PRIVATE_NETWORKS, 'TRUSTED_PROXIES'),
+    publicUrl: parsePublicUrl(env.PUBLIC_URL),
   };
 }
 
@@ -39,6 +42,29 @@ function parseAdminPassword(value) {
     );
   }
   return value;
+}
+
+/**
+ * Öffentliche Adresse ohne Pfad, z. B. `https://poker.example.de`.
+ * Leer = keine Angabe.
+ */
+function parsePublicUrl(value) {
+  if (!value) return '';
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`Ungültige PUBLIC_URL: ${value}`);
+  }
+  if (!['http:', 'https:'].includes(url.protocol)) {
+    throw new Error(`PUBLIC_URL muss mit http:// oder https:// beginnen: ${value}`);
+  }
+  if ((url.pathname !== '/' && url.pathname !== '') || url.search || url.hash || url.username) {
+    throw new Error(
+      `PUBLIC_URL darf nur Protokoll und Adresse enthalten, z. B. https://poker.example.de: ${value}`,
+    );
+  }
+  return url.origin;
 }
 
 function parsePort(value) {

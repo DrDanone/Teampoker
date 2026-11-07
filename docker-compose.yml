@@ -13,8 +13,11 @@ services:
       # Ohne Passwort startet Wilkenpoker absichtlich nicht.
       ADMIN_PASSWORD: ''
       PORT: '3000'
+      # Öffentliche Adresse über den Cloudflare Tunnel – damit kopierte
+      # Einladungslinks von außen funktionieren (sonst Heimnetz-Adresse).
+      PUBLIC_URL: ''
       # Verwaltung nur aus diesen Netzen und nie über den Cloudflare Tunnel.
-      # Standard: private Netze (Heimnetz, Docker). '*' hebt die Einschränkung auf.
+      # Standard: private Netze (Heimnetz, Docker). '*' = überall, auch über den Tunnel.
       # ADMIN_NETWORKS: '192.168.178.0/24'
       # Netze, aus denen der Tunnel kommt; dessen CF-Connecting-IP gilt als
       # echte Client-Adresse. Standard: private Netze.
