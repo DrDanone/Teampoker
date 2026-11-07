@@ -1,267 +1,356 @@
-/* Vorläufige, schlichte Gestaltung. Das GY-Utility-Design folgt mit Issue #7. */
+/* Seiten für Teilnehmer: Beitritt und Schätzraum. Grundlagen in theme.css. */
 
-:root {
-  --purple: #951b81;
-  --deep-blue: #081950;
-  --magenta: #d71482;
-  --gray-100: #f2f2f2;
-  --gray-300: #d1d1d1;
-  --gray-600: #747474;
-  font-family: Aptos, 'Aptos Display', 'Segoe UI', Helvetica, Arial, sans-serif;
-  color: #000;
+/* ---------- Beitritt ---------- */
+
+.join {
+  max-width: 28rem;
+  margin: var(--space-6) auto 0;
 }
 
-body {
-  margin: 0;
+.join-form {
+  display: grid;
+  gap: var(--space-4);
 }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--gray-300);
+.join-form .button {
+  justify-self: start;
 }
 
-h1 {
-  font-size: 1.25rem;
-  color: var(--purple);
-  margin: 0;
-}
-
-.room-title {
+#code:not(:placeholder-shown) {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
   font-weight: 700;
   color: var(--deep-blue);
 }
 
-main {
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
+/* ---------- Raum ---------- */
 
-form {
+.room-layout {
   display: grid;
-  gap: 0.5rem;
-  max-width: 24rem;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: var(--gutter);
+  align-items: start;
 }
 
-label {
-  font-weight: 700;
-  margin-top: 0.5rem;
-}
-
-input {
-  font: inherit;
-  padding: 0.5rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 8px;
-}
-
-#code {
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-}
-
-button {
-  font: inherit;
-  padding: 0.5rem 1rem;
-  border: 2px solid var(--purple);
-  border-radius: 8px;
-  background: var(--purple);
-  color: #fff;
-  cursor: pointer;
-  justify-self: start;
-}
-
-form button {
-  margin-top: 0.75rem;
-}
-
-.button-secondary {
-  background: #fff;
-  color: var(--purple);
-}
-
-button:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--deep-blue);
-  outline-offset: 2px;
-}
-
-.status {
-  min-height: 1.5rem;
-}
-
-.status-error {
-  color: var(--magenta);
-}
-
-.participants {
-  list-style: none;
-  padding: 0;
+.room-main {
   display: grid;
-  gap: 0.5rem;
-}
-
-.participant {
-  padding: 0.5rem 0.75rem;
-  border: 2px solid var(--gray-300);
-  border-radius: 12px;
-}
-
-.participant.you {
-  border-color: var(--purple);
-}
-
-.participant.offline {
-  color: var(--gray-600);
-  border-style: dashed;
-}
-
-.suffix {
-  color: var(--gray-600);
-}
-
-[hidden] {
-  display: none !important;
-}
-
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  gap: var(--space-5);
 }
 
 .round-bar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 1rem;
+  gap: var(--space-2) var(--space-4);
 }
 
-.progress,
-.hint {
-  color: var(--gray-600);
+.round-bar {
+  margin-bottom: var(--space-2);
 }
+
+.round-bar .section-title {
+  margin: 0;
+}
+
+.progress {
+  font-weight: 700;
+  color: var(--deep-blue);
+}
+
+.cards-hint {
+  margin: 0 0 var(--space-4);
+}
+
+/* ---------- Karten ---------- */
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
-  gap: 0.5rem;
-  margin: 0.75rem 0 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  gap: var(--space-3);
 }
 
 .card {
-  justify-self: stretch;
-  min-height: 5.5rem;
-  font-size: 1.5rem;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-1);
+  font: inherit;
+  font-size: 1.75rem;
   font-weight: 700;
-  border-radius: 12px;
-  background: #fff;
   color: var(--purple);
+  background: var(--surface);
+  border: var(--border-box) solid var(--purple);
+  border-radius: var(--radius-box);
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    background-color 120ms ease;
+}
+
+.card .icon {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* Hover nur auf Geräten mit Maus – auf Touchgeräten bleibt er sonst hängen. */
+@media (hover: hover) {
+  .card:hover:not(:disabled) {
+    color: var(--on-lilac);
+    background: var(--lilac);
+    border-color: var(--lilac);
+    transform: translateY(-3px);
+  }
+
+  .card[aria-pressed='true']:hover:not(:disabled) {
+    color: var(--on-brand);
+    background: var(--deep-blue);
+    border-color: var(--deep-blue);
+  }
 }
 
 .card[aria-pressed='true'] {
+  color: var(--on-brand);
   background: var(--purple);
-  color: #fff;
+  border-color: var(--purple);
+  transform: translateY(-6px);
 }
 
 .card:disabled {
   cursor: default;
-  opacity: 0.6;
+  color: var(--gray-300);
+  border-color: var(--gray-200);
 }
 
 .card[aria-pressed='true']:disabled {
-  opacity: 1;
+  color: var(--on-brand);
+  background: var(--purple);
+  border-color: var(--purple);
 }
 
 .round-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
 }
 
-button:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
+/* ---------- Ergebnis (gefüllte Infobox in Deep Blue) ---------- */
 
 .result {
-  border: 2px solid var(--deep-blue);
-  border-radius: 16px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: var(--space-5);
+  color: var(--on-brand);
+  background: var(--deep-blue);
+  border-radius: var(--radius-card);
+  animation: appear 240ms ease-out;
+}
+
+.result-title {
+  color: var(--on-brand);
 }
 
 .consensus {
-  margin: 0 0 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 10px;
-  background: var(--deep-blue);
-  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
   font-weight: 700;
+  color: var(--on-lilac);
+  background: var(--lilac);
+  border-radius: var(--radius-tab);
 }
 
 .stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
   margin: 0;
 }
 
 .stats dt {
-  color: var(--gray-600);
+  font-size: 0.9375rem;
+  color: var(--gray-200);
 }
 
 .stats dd {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  color: var(--deep-blue);
+  line-height: 1.1;
+}
+
+.stat-note {
+  margin: var(--space-3) 0 0;
+  color: var(--gray-200);
+}
+
+.stat-note:empty {
+  display: none;
+}
+
+/* ---------- Teilnehmer ---------- */
+
+.room-side {
+  padding: var(--space-5);
+  border: var(--border-box) solid var(--purple);
+  border-radius: var(--radius-card-outline);
+}
+
+.room-side .section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.participants {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .participant {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 3rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-muted);
+  border: var(--border-step) solid transparent;
+  border-radius: var(--radius-card);
+}
+
+.participant-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.participant.you .participant-name {
+  font-weight: 700;
+}
+
+.suffix {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.participant.offline {
+  color: var(--ink-muted);
+}
+
+.participant.offline .badge {
+  color: var(--ink-muted);
+  background: var(--gray-200);
 }
 
 .participant-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-weight: 700;
+  color: var(--deep-blue);
+}
+
+.participant-vote .icon {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .participant-vote.pending {
   font-weight: 400;
-  color: var(--gray-600);
+  color: var(--ink-muted);
+}
+
+/* Aufgedeckter Wert als kleine Karte */
+.vote-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 2.75rem;
+  padding: 0 var(--space-2);
+  font-size: 1.25rem;
+  color: var(--on-brand);
+  background: var(--purple);
+  border-radius: var(--radius-tab);
+  animation: appear 240ms ease-out;
+}
+
+.vote-chip.empty {
+  color: var(--ink-muted);
+  background: var(--gray-200);
 }
 
 .participant.high,
 .participant.low {
+  background: var(--surface);
   border-color: var(--magenta);
 }
 
-/* Bis zum Icon aus #7 steht auf der Kaffeekarte Text. */
-.card[data-value='coffee'] {
-  font-size: 1rem;
-  padding: 0.25rem;
+.participant.high .vote-chip,
+.participant.low .vote-chip {
+  background: var(--magenta);
 }
 
-.logo-slot {
-  display: flex;
+.outlier {
+  display: inline-flex;
   align-items: center;
+  gap: 0.125rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--magenta);
+  text-align: right;
 }
 
-/* Feste Höhe, damit auch SVGs ohne eigene Größenangabe sichtbar sind. */
-.logo {
-  display: block;
-  height: 40px;
-  width: auto;
-  max-width: 160px;
-  object-fit: contain;
+.outlier .icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .room-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .join {
+    margin-top: var(--space-4);
+  }
+
+  .cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .card {
+    font-size: 1.5rem;
+  }
+
+  .panel,
+  .room-side,
+  .result {
+    padding: var(--space-4);
+  }
+
+  .stats dd {
+    font-size: 1.75rem;
+  }
+
+  .leave-label {
+    display: none;
+  }
 }

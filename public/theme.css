@@ -1,0 +1,410 @@
+/*
+ * GY Utility – Design-Tokens und Grundelemente für Wilkenpoker.
+ * Werte aus dem Design System „GY Utility“ (PowerPoint-Master, px = pt × 4/3).
+ */
+
+:root {
+  /* Farben */
+  --purple: #951b81;
+  --deep-blue: #081950;
+  --lilac: #c8aee3;
+  --violet: #7832de;
+  --magenta: #d71482;
+  --black: #000;
+  --white: #fff;
+  --sand: #d9d6d1;
+  --gray-100: #f2f2f2;
+  --gray-200: #e8e8e8;
+  --gray-300: #d1d1d1;
+  --gray-600: #747474;
+
+  /* Rollen */
+  --surface: var(--white);
+  --surface-muted: var(--gray-100);
+  --ink: var(--black);
+  /* Etwas dunkler als gray-600 aus dem Master, damit Sekundärtext auch auf
+     grauen Flächen (gray-100) den WCAG-Kontrast von 4,5:1 erreicht. */
+  --ink-muted: #5f5f5f;
+  --headline: var(--purple);
+  --border: var(--gray-300);
+  --on-brand: var(--white);
+  --on-lilac: var(--deep-blue);
+  --focus-ring: var(--deep-blue);
+  --danger: var(--magenta);
+
+  /* Schrift */
+  --font-sans: Aptos, 'Aptos Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  /* Radien */
+  --radius-tab: 10px;
+  --radius-card: 12px;
+  --radius-box: 16px;
+  --radius-card-outline: 19px;
+  --radius-panel: 22px;
+
+  /* Konturen */
+  --border-hairline: 1px;
+  --border-step: 2px;
+  --border-box: 3px;
+
+  /* Abstände */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --gutter: 30px;
+  --page-width: 72rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 100%;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--surface);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Kopfzeile mit Purple-Kurve ---------- */
+
+.topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 72px;
+  padding: var(--space-3) var(--space-5) var(--space-3) 5.5rem;
+  overflow: hidden;
+}
+
+/* Die Purple-Kurve oben links – Erkennungszeichen von GY Utility.
+   Ist ein Logo hochgeladen, steht stattdessen das Logo in der Ecke. */
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  left: -60px;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  border: 14px solid var(--purple);
+}
+
+.topbar.has-logo {
+  padding-left: var(--space-5);
+}
+
+.topbar.has-logo::before {
+  display: none;
+}
+
+.logo-slot:empty {
+  display: none;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--headline);
+}
+
+.topbar-context {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--deep-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.logo-slot {
+  display: flex;
+  align-items: center;
+}
+
+/* Feste Höhe, damit auch SVGs ohne eigene Größenangabe sichtbar sind. */
+.logo {
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+/* ---------- Seite ---------- */
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-5) var(--space-6);
+}
+
+.headline {
+  margin: 0 0 var(--space-2);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--headline);
+}
+
+.subheadline {
+  margin: 0 0 var(--space-5);
+  font-size: 1.125rem;
+  color: var(--ink-muted);
+}
+
+.section-title {
+  margin: 0 0 var(--space-3);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--headline);
+}
+
+.hint {
+  color: var(--ink-muted);
+}
+
+/* ---------- Statusmeldung ---------- */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 1.5rem;
+  margin: 0 0 var(--space-4);
+  color: var(--deep-blue);
+}
+
+.status:empty {
+  margin: 0;
+  min-height: 0;
+}
+
+.status-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ---------- Formulare ---------- */
+
+label {
+  display: block;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  font: inherit;
+  padding: 0.625rem 0.75rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: var(--border-step) solid var(--border);
+  border-radius: var(--radius-tab);
+}
+
+input:hover {
+  border-color: var(--lilac);
+}
+
+input[type='file'] {
+  padding: var(--space-2);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* ---------- Schaltflächen ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0.5rem 1.125rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--on-brand);
+  background: var(--purple);
+  border: var(--border-step) solid var(--purple);
+  border-radius: var(--radius-tab);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.button:hover {
+  background: var(--deep-blue);
+  border-color: var(--deep-blue);
+}
+
+.button-secondary {
+  color: var(--purple);
+  background: var(--surface);
+}
+
+.button-secondary:hover {
+  color: var(--on-lilac);
+  background: var(--lilac);
+  border-color: var(--lilac);
+}
+
+.button-danger {
+  color: var(--danger);
+  background: var(--surface);
+  border-color: var(--danger);
+}
+
+.button-danger:hover {
+  color: var(--on-brand);
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.button-small {
+  min-height: 36px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9375rem;
+}
+
+.button:disabled {
+  cursor: default;
+  color: var(--ink-muted);
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------- Flächen ---------- */
+
+.panel {
+  padding: var(--space-5);
+  background: var(--surface-muted);
+  border-radius: var(--radius-panel);
+}
+
+.box-outline {
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: var(--border-box) solid var(--purple);
+  border-radius: var(--radius-card-outline);
+}
+
+/* Initialen im Kreis (Gestaltungselement „CircleBadge“) */
+.badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--on-brand);
+  background: var(--purple);
+}
+
+@media (max-width: 600px) {
+  /* Kopfzeile in zwei Zeilen: Marke und Aktionen oben, Raumname darunter. */
+  .topbar {
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+    padding-left: 4.5rem;
+    padding-right: var(--space-4);
+  }
+
+  .topbar.has-logo {
+    padding-left: var(--space-4);
+  }
+
+  .brand {
+    font-size: 1rem;
+  }
+
+  .topbar-end {
+    gap: var(--space-2);
+  }
+
+  .topbar-context {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .logo {
+    height: 32px;
+    max-width: 80px;
+  }
+
+  .topbar::before {
+    top: -70px;
+    left: -70px;
+  }
+
+  main {
+    padding: var(--space-3) var(--space-4) var(--space-5);
+  }
+
+  .headline {
+    font-size: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
