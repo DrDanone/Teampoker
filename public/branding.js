@@ -1,4 +1,4 @@
-// Zeigt das vom Superadmin hochgeladene Logo oben rechts an.
+// Zeigt das vom Superadmin hochgeladene Logo oben links an (statt der Purple-Kurve).
 
 /** @param {{ url: string } | null} logo */
 export function showLogo(logo) {
