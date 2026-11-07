@@ -61,7 +61,7 @@ Diese Eigenschaften sind durch Tests abgesichert und dürfen nicht aufgeweicht w
 - Logo: Format über Dateisignatur, gefährliche SVGs **ablehnen**, Auslieferung mit CSP-`sandbox`.
 - **Keine verschachtelten Regexe auf Benutzereingaben** (ReDoS – ist schon einmal passiert).
 - Client-IP aus `CF-Connecting-IP`/`X-Forwarded-For` nur, wenn die Verbindung aus `TRUSTED_PROXIES` kommt.
-- Verwaltungspfade werden auch dekodiert geprüft (`/%61dmin/`).
+- Verwaltungspfade werden dekodiert **und normalisiert** geprüft (`/%61dmin/`, `/%2fadmin/`); zusätzlich sperrt die statische Auslieferung `public/admin/` selbst.
 - Keine Namen, Codes, Tokens oder Passwörter in Logs.
 - Container ohne root, schreibgeschützt bis auf `/data`.
 
@@ -87,6 +87,6 @@ Für Reviews zusätzlich prüfen:
 ## Stolperstellen
 
 - Beim Schreiben von Dateien können Unicode-Escapes (z. B. `\u200b`, `\uFEFF`) als **echte unsichtbare Zeichen** landen. Solche Stellen über Zeichencodes erzeugen und danach prüfen:
-  `grep -rnP "[\x{2028}\x{2029}\x{200b}-\x{200f}\x{feff}]" server/ public/ test/`
+  `LC_ALL=C.UTF-8 grep -rnP "[\x{2028}\x{2029}\x{200b}-\x{200f}\x{feff}]" server/ public/ test/`
 - Docker Hub ist aus der Claude-Arbeitsumgebung nicht erreichbar – Images werden nur in der GitHub-CI gebaut und getestet.
 - GitHub GraphQL ist dort gesperrt; `gh api` mit REST-Endpunkten verwenden.
