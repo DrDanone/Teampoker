@@ -1,3 +1,5 @@
+import { access, constants, mkdir } from 'node:fs/promises';
+
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { LogoStore } from './branding/logo.js';
@@ -8,6 +10,7 @@ let rooms;
 let logo;
 try {
   config = loadConfig();
+  await assertWritable(config.dataDir);
   rooms = await new RoomStore(config.dataDir).load();
   logo = await new LogoStore(config.dataDir).load();
 } catch (error) {
@@ -32,3 +35,17 @@ async function shutdown(signal) {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+/** Bricht früh mit einer verständlichen Meldung ab, wenn DATA_DIR nicht beschreibbar ist. */
+async function assertWritable(dir) {
+  try {
+    await mkdir(dir, { recursive: true });
+    await access(dir, constants.W_OK);
+  } catch {
+    const uid = process.getuid?.() ?? '?';
+    throw new Error(
+      `Datenverzeichnis ${dir} ist nicht beschreibbar (Benutzer-ID ${uid}). ` +
+        `Auf dem Host z. B. mit "chown -R ${uid}:${uid} <Ordner>" freigeben.`,
+    );
+  }
+}

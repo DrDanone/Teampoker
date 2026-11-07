@@ -6,6 +6,14 @@ Planning Poker für die Refinements: Teams schätzen verdeckt, decken gemeinsam 
 
 - Node.js 22 (siehe `.nvmrc`)
 
+## Betrieb mit Docker
+
+Für den Betrieb auf ZimaOS gibt es ein fertiges Image und eine Compose-Datei: Anleitung in [`docs/ZIMAOS.md`](docs/ZIMAOS.md).
+
+```bash
+docker compose up -d   # vorher ADMIN_PASSWORD in docker-compose.yml eintragen
+```
+
 ## Lokal starten
 
 ```bash

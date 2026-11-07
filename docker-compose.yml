@@ -1,0 +1,50 @@
+# Wilkenpoker für ZimaOS (oder jeden anderen Docker-Host).
+# Anleitung: docs/ZIMAOS.md
+name: wilkenpoker
+
+services:
+  wilkenpoker:
+    image: ghcr.io/drdanone/wilkenpoker:latest
+    container_name: wilkenpoker
+    restart: unless-stopped
+
+    environment:
+      # Pflicht: Passwort für die Verwaltung unter /admin/, mindestens 12 Zeichen.
+      # Ohne Passwort startet Wilkenpoker absichtlich nicht.
+      ADMIN_PASSWORD: ''
+      PORT: '3000'
+
+    ports:
+      - '8090:3000'
+
+    volumes:
+      # Räume und Logo. Der Ordner muss dem Benutzer mit UID 1000 gehören.
+      - /DATA/AppData/wilkenpoker:/data
+
+    # Härtung: unprivilegierter Benutzer, schreibgeschütztes Dateisystem
+    # (außer /data und /tmp), keine Linux-Capabilities.
+    user: '1000:1000'
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+# Angaben für die App-Übersicht von ZimaOS/CasaOS (optional).
+x-casaos:
+  main: wilkenpoker
+  architectures:
+    - amd64
+    - arm64
+  author: DrDanone
+  category: Utilities
+  title:
+    en_us: Wilkenpoker
+    de_de: Wilkenpoker
+  description:
+    en_us: Planning Poker for refinements.
+    de_de: Planning Poker für die Refinements.
+  port_map: '8090'
+  index: /
