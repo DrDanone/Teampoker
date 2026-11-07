@@ -2,6 +2,8 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { createAdminApi } from './admin/routes.js';
+import { sendJson, sendText } from './http.js';
 import { createStaticHandler } from './static.js';
 import { attachWebSocket } from './ws.js';
 
@@ -10,14 +12,54 @@ const PUBLIC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 /**
  * Erstellt den HTTP-Server mit WebSocket-Endpunkt, startet ihn aber noch nicht.
  *
- * @param {ReturnType<import('./config.js').loadConfig>} _config
+ * @param {ReturnType<import('./config.js').loadConfig>} config
+ * @param {object} deps
+ * @param {import('./rooms/store.js').RoomStore} deps.rooms geladener Raum-Speicher
+ * @param {Parameters<typeof createAdminApi>[0]['sessions']} [deps.sessions]
+ * @param {Parameters<typeof createAdminApi>[0]['loginLimiter']} [deps.loginLimiter]
  */
-export function createApp(_config) {
+export function createApp(config, { rooms, sessions, loginLimiter }) {
   const serveStatic = createStaticHandler(PUBLIC_DIR);
+  const handleAdminApi = createAdminApi({
+    rooms,
+    adminPassword: config.adminPassword,
+    sessions,
+    loginLimiter,
+  });
+
+  async function handleRequest(req, res) {
+    const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+
+    if (await handleAdminApi(req, res, pathname)) return;
+    if (pathname.startsWith('/api/')) {
+      sendJson(res, 404, { error: 'Nicht gefunden' });
+      return;
+    }
+
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      sendText(res, 405, 'Methode nicht erlaubt', { Allow: 'GET, HEAD' });
+      return;
+    }
+
+    if (pathname === '/healthz') {
+      sendText(res, 200, 'ok');
+      return;
+    }
+
+    if (pathname === '/admin') {
+      res.writeHead(301, { Location: '/admin/' });
+      res.end();
+      return;
+    }
+
+    if (await serveStatic(req, res, pathname)) return;
+
+    sendText(res, 404, 'Nicht gefunden');
+  }
 
   const server = http.createServer(async (req, res) => {
     try {
-      await handleRequest(req, res, serveStatic);
+      await handleRequest(req, res);
     } catch (error) {
       console.error('Fehler bei der Anfrage:', error);
       if (!res.headersSent) sendText(res, 500, 'Interner Fehler');
@@ -35,31 +77,4 @@ export function createApp(_config) {
   }
 
   return { server, close };
-}
-
-async function handleRequest(req, res, serveStatic) {
-  const { pathname } = new URL(req.url ?? '/', 'http://localhost');
-
-  if (req.method !== 'GET' && req.method !== 'HEAD') {
-    res.setHeader('Allow', 'GET, HEAD');
-    sendText(res, 405, 'Methode nicht erlaubt');
-    return;
-  }
-
-  if (pathname === '/healthz') {
-    sendText(res, 200, 'ok');
-    return;
-  }
-
-  if (await serveStatic(req, res, pathname)) return;
-
-  sendText(res, 404, 'Nicht gefunden');
-}
-
-function sendText(res, status, text) {
-  res.writeHead(status, {
-    'Content-Type': 'text/plain; charset=utf-8',
-    'Content-Length': Buffer.byteLength(text),
-  });
-  res.end(text);
 }

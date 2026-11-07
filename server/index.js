@@ -1,8 +1,18 @@
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
+import { RoomStore } from './rooms/store.js';
 
-const config = loadConfig();
-const { server, close } = createApp(config);
+let config;
+let rooms;
+try {
+  config = loadConfig();
+  rooms = await new RoomStore(config.dataDir).load();
+} catch (error) {
+  console.error(`Start abgebrochen: ${error.message}`);
+  process.exit(1);
+}
+
+const { server, close } = createApp(config, { rooms });
 
 server.listen(config.port, () => {
   console.log(`Wilkenpoker läuft auf Port ${server.address().port}`);

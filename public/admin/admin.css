@@ -1,0 +1,158 @@
+/* Vorläufige, schlichte Gestaltung. Das GY-Utility-Design folgt mit Issue #7. */
+
+:root {
+  --purple: #951b81;
+  --deep-blue: #081950;
+  --magenta: #d71482;
+  --gray-100: #f2f2f2;
+  --gray-300: #d1d1d1;
+  --gray-600: #747474;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: #000;
+}
+
+body {
+  margin: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-300);
+}
+
+h1 {
+  font-size: 1.25rem;
+  color: var(--purple);
+  margin: 0;
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+}
+
+input {
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--purple);
+  border-radius: 8px;
+  background: var(--purple);
+  color: #fff;
+  cursor: pointer;
+}
+
+.button-secondary {
+  background: #fff;
+  color: var(--purple);
+}
+
+.button-danger {
+  background: #fff;
+  border-color: var(--magenta);
+  color: var(--magenta);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--deep-blue);
+  outline-offset: 2px;
+}
+
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.inline-form label {
+  flex-basis: 100%;
+}
+
+.status {
+  min-height: 1.5rem;
+}
+
+.status-error {
+  color: var(--magenta);
+}
+
+.hint,
+.room-created {
+  color: var(--gray-600);
+}
+
+.rooms {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.room {
+  border: 2px solid var(--gray-300);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.room-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.room-name {
+  margin: 0;
+}
+
+.room-code {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.room-code dd {
+  margin: 0;
+}
+
+.code {
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  color: var(--deep-blue);
+}
+
+.actions,
+.confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.confirm-text {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
