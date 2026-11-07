@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
 # ---- Abhängigkeiten (nur Laufzeit) ----
-FROM node:22-alpine AS deps
+FROM node:25-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # ---- Laufzeit-Image ----
-FROM node:22-alpine
+FROM node:25-alpine
 ENV NODE_ENV=production \
     PORT=3000 \
     DATA_DIR=/data
