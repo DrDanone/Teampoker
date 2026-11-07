@@ -23,6 +23,7 @@ const ROOM_CODE_PATH = /^\/api\/admin\/rooms\/([A-Za-z0-9-]{1,64})\/code$/;
  * @param {import('../rooms/store.js').RoomStore} options.rooms
  * @param {import('../branding/logo.js').LogoStore} options.logo
  * @param {string} options.adminPassword
+ * @param {string} [options.publicUrl] öffentliche Adresse für Einladungslinks
  * @param {SessionStore} [options.sessions]
  * @param {FailureLimiter} [options.loginLimiter]
  */
@@ -30,6 +31,7 @@ export function createAdminApi({
   rooms,
   logo,
   adminPassword,
+  publicUrl = '',
   sessions = new SessionStore(),
   loginLimiter = new FailureLimiter(),
 }) {
@@ -141,7 +143,7 @@ export function createAdminApi({
     sendJson(
       res,
       200,
-      { authenticated: true, csrfToken: session.csrfToken },
+      { authenticated: true, csrfToken: session.csrfToken, publicUrl },
       { 'Set-Cookie': sessionCookie(req, session.id) },
     );
   }
@@ -149,7 +151,7 @@ export function createAdminApi({
   function sessionInfo(req, res) {
     const session = currentSession(req);
     if (!session) return sendJson(res, 200, { authenticated: false });
-    sendJson(res, 200, { authenticated: true, csrfToken: session.csrfToken });
+    sendJson(res, 200, { authenticated: true, csrfToken: session.csrfToken, publicUrl });
   }
 
   function currentSession(req) {

@@ -14,6 +14,8 @@ const LOGO_TYPES = {
 };
 
 let csrfToken = '';
+/** Öffentliche Adresse für Einladungslinks (PUBLIC_URL), sonst die aktuelle. */
+let publicUrl = '';
 
 async function api(method, path, body) {
   const headers = {};
@@ -122,7 +124,7 @@ $('#logo-remove').addEventListener('click', async () => {
 });
 
 function inviteLink(code) {
-  return `${location.origin}/join/${code}`;
+  return `${publicUrl || location.origin}/join/${code}`;
 }
 
 function renderRoom(room) {
@@ -226,6 +228,7 @@ $('#login-form').addEventListener('submit', async (event) => {
   try {
     const data = await api('POST', '/login', { password: input.value });
     csrfToken = data.csrfToken;
+    publicUrl = data.publicUrl ?? '';
     input.value = '';
     setStatus('');
     await showRooms();
@@ -263,6 +266,7 @@ async function init() {
     const session = await api('GET', '/session');
     if (session.authenticated) {
       csrfToken = session.csrfToken;
+      publicUrl = session.publicUrl ?? '';
       await showRooms();
     } else {
       showLogin();

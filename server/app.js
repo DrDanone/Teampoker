@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createAdminApi, logoInfo } from './admin/routes.js';
 import { sendJson, sendText } from './http.js';
+import { isAdminAllowed, resolveClientIp } from './network.js';
 import { PokerHub } from './poker/hub.js';
 import { applySecurityHeaders } from './security.js';
 import { createStaticHandler } from './static.js';
@@ -28,18 +29,33 @@ export function createApp(
   config,
   { rooms, logo, sessions, loginLimiter, hubOptions = {}, wsOptions = {} },
 ) {
-  const serveStatic = createStaticHandler(PUBLIC_DIR);
+  // Zweite Sicherung: Dateien unter public/admin/ werden nur ausgeliefert,
+  // wenn die Verwaltung für diese Anfrage erlaubt ist – unabhängig davon,
+  // wie der Pfad geschrieben wurde.
+  const serveStatic = createStaticHandler(PUBLIC_DIR, {
+    isDenied: (req, relativePath) =>
+      isAdminFile(relativePath) && !isAdminAllowed(req, config.adminNetworks),
+  });
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
     rooms,
     logo,
     adminPassword: config.adminPassword,
+    publicUrl: config.publicUrl,
     sessions,
     loginLimiter,
   });
 
   async function handleRequest(req, res) {
     const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+
+    // Die Verwaltung gibt es nur im Heimnetz. Von außen (Tunnel) sieht sie
+    // aus, als gäbe es sie nicht.
+    if (isAdminPath(pathname) && !isAdminAllowed(req, config.adminNetworks)) {
+      if (pathname.startsWith('/api/')) sendJson(res, 404, { error: 'Nicht gefunden' });
+      else sendText(res, 404, 'Nicht gefunden');
+      return;
+    }
 
     if (await handleAdminApi(req, res, pathname)) return;
     if (pathname === '/api/branding' && req.method === 'GET') {
@@ -84,6 +100,7 @@ export function createApp(
 
   const server = http.createServer(async (req, res) => {
     applySecurityHeaders(req, res);
+    req.clientIp = resolveClientIp(req, config.trustedProxies);
     try {
       await handleRequest(req, res);
     } catch (error) {
@@ -93,6 +110,10 @@ export function createApp(
     }
   });
 
+  // WebSocket-Upgrades laufen am Request-Handler vorbei – Client-Adresse hier setzen.
+  server.prependListener('upgrade', (req) => {
+    req.clientIp = resolveClientIp(req, config.trustedProxies);
+  });
   const wss = attachWebSocket(server, { hub, ...wsOptions });
 
   // Langsame oder hängende Anfragen nicht ewig offen halten.
@@ -134,4 +155,34 @@ function serveLogo(req, res, current) {
   }
   res.writeHead(200, { ...headers, 'Content-Length': current.data.length });
   res.end(req.method === 'HEAD' ? undefined : current.data);
+}
+
+/**
+ * Ob der Pfad zur Verwaltung gehört. Geprüft werden die rohe, die dekodierte
+ * und die normalisierte Form – so wie die statische Auslieferung den Pfad
+ * auflöst –, damit z. B. `/%61dmin/`, `/%2fadmin/` oder `/x/..%2fadmin/`
+ * nicht an der Sperre vorbei ausgeliefert werden.
+ */
+export function isAdminPath(pathname) {
+  let decoded;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    decoded = pathname;
+  }
+  const normalized = path.posix.normalize(`/${decoded}`);
+  return [pathname, decoded, normalized].some((candidate) => {
+    const lower = candidate.toLowerCase();
+    return (
+      lower === '/admin' ||
+      lower.startsWith('/admin/') ||
+      lower === '/api/admin' ||
+      lower.startsWith('/api/admin/')
+    );
+  });
+}
+
+function isAdminFile(relativePath) {
+  const first = relativePath.split(/[\\/]/)[0].toLowerCase();
+  return first === 'admin';
 }

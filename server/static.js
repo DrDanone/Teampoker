@@ -22,15 +22,19 @@ const CONTENT_TYPES = {
  * (z. B. über `..` oder kodierte Schrägstriche) werden abgewiesen.
  *
  * @param {string} rootDir absoluter Pfad des öffentlichen Verzeichnisses
+ * @param {object} [options]
+ * @param {(req: import('node:http').IncomingMessage, relativePath: string) => boolean} [options.isDenied]
+ *   sperrt einzelne Dateien (Pfad relativ zu `rootDir`) für bestimmte Anfragen
  * @returns {(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, pathname: string) => Promise<boolean>}
  *   gibt `true` zurück, wenn eine Datei ausgeliefert wurde
  */
-export function createStaticHandler(rootDir) {
+export function createStaticHandler(rootDir, { isDenied = () => false } = {}) {
   const root = path.resolve(rootDir);
 
   return async function serveStatic(req, res, pathname) {
     const filePath = resolveSafe(root, pathname);
     if (!filePath) return false;
+    if (isDenied(req, path.relative(root, filePath))) return false;
 
     let info;
     try {
