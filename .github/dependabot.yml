@@ -18,3 +18,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Node.js bleibt auf Version 22 (LTS); Hauptversionen nur bewusst anheben.
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
