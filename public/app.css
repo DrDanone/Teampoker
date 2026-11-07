@@ -251,3 +251,17 @@ button:disabled {
   font-size: 1rem;
   padding: 0.25rem;
 }
+
+.logo-slot {
+  display: flex;
+  align-items: center;
+}
+
+/* Feste Höhe, damit auch SVGs ohne eigene Größenangabe sichtbar sind. */
+.logo {
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}

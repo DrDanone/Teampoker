@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { createApp } from '../server/app.js';
 import { loadConfig } from '../server/config.js';
+import { LogoStore } from '../server/branding/logo.js';
 import { RoomStore } from '../server/rooms/store.js';
 
 export const TEST_PASSWORD = 'test-passwort-123';
@@ -24,13 +25,15 @@ export async function startTestServer({ env = {}, deps = {} } = {}) {
     ...env,
   });
   const rooms = await new RoomStore(config.dataDir).load();
-  const app = createApp(config, { rooms, ...deps });
+  const logo = await new LogoStore(config.dataDir).load();
+  const app = createApp(config, { rooms, logo, ...deps });
   await new Promise((resolve) => app.server.listen(0, '127.0.0.1', resolve));
   const { port } = app.server.address();
   return {
     baseUrl: `http://127.0.0.1:${port}`,
     wsUrl: `ws://127.0.0.1:${port}/ws`,
     rooms,
+    logo,
     hub: app.hub,
     dataDir,
     async close() {

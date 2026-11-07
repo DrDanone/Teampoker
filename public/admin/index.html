@@ -11,7 +11,10 @@
   <body>
     <header class="topbar">
       <h1>Wilkenpoker · Verwaltung</h1>
-      <button id="logout" type="button" class="button-secondary" hidden>Abmelden</button>
+      <span class="topbar-end">
+        <button id="logout" type="button" class="button-secondary" hidden>Abmelden</button>
+        <span id="logo-slot" class="logo-slot"></span>
+      </span>
     </header>
 
     <main>
@@ -42,6 +45,31 @@
 
         <p id="empty" class="hint" hidden>Noch keine Räume angelegt.</p>
         <ul id="rooms" class="rooms"></ul>
+      </section>
+
+      <section id="logo-view" hidden>
+        <h2>Logo</h2>
+        <p class="hint">
+          Erscheint oben rechts auf allen Seiten. PNG, JPG, WebP oder SVG, höchstens 1 MB.
+        </p>
+        <div class="logo-preview">
+          <img id="logo-preview" alt="Aktuelles Logo" hidden />
+          <span id="logo-none" class="hint">Kein Logo hochgeladen.</span>
+        </div>
+        <form id="logo-form" class="inline-form">
+          <label for="logo-file">Neues Logo</label>
+          <input
+            id="logo-file"
+            name="logo"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            required
+          />
+          <button type="submit">Hochladen</button>
+          <button id="logo-remove" type="button" class="button-danger" hidden>
+            Logo entfernen
+          </button>
+        </form>
       </section>
     </main>
 

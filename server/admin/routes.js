@@ -1,4 +1,13 @@
-import { HttpError, clientIp, isHttps, parseCookies, readJson, sendJson } from '../http.js';
+import { LogoError, MAX_LOGO_BYTES } from '../branding/logo.js';
+import {
+  HttpError,
+  clientIp,
+  isHttps,
+  parseCookies,
+  readJson,
+  readRaw,
+  sendJson,
+} from '../http.js';
 import { FailureLimiter } from '../ratelimit.js';
 import { RoomError } from '../rooms/store.js';
 import { ABSOLUTE_TIMEOUT_MS, SESSION_COOKIE, SessionStore, safeEqual } from './sessions.js';
@@ -12,12 +21,14 @@ const ROOM_CODE_PATH = /^\/api\/admin\/rooms\/([A-Za-z0-9-]{1,64})\/code$/;
  *
  * @param {object} options
  * @param {import('../rooms/store.js').RoomStore} options.rooms
+ * @param {import('../branding/logo.js').LogoStore} options.logo
  * @param {string} options.adminPassword
  * @param {SessionStore} [options.sessions]
  * @param {FailureLimiter} [options.loginLimiter]
  */
 export function createAdminApi({
   rooms,
+  logo,
   adminPassword,
   sessions = new SessionStore(),
   loginLimiter = new FailureLimiter(),
@@ -31,6 +42,8 @@ export function createAdminApi({
     } catch (error) {
       if (error instanceof HttpError) {
         sendJson(res, error.status, { error: error.message }, error.headers);
+      } else if (error instanceof LogoError) {
+        sendJson(res, 400, { error: error.message });
       } else if (error instanceof RoomError) {
         sendJson(res, error.code === 'not-found' ? 404 : 400, { error: error.message });
       } else {
@@ -52,6 +65,21 @@ export function createAdminApi({
       requireCsrf(req, session);
       sessions.destroy(session.id);
       return sendJson(res, 200, { ok: true }, { 'Set-Cookie': clearCookie(req) });
+    }
+
+    if (pathname === `${API_PREFIX}/logo`) {
+      if (method === 'PUT') {
+        requireCsrf(req, session);
+        const data = await readRaw(req, MAX_LOGO_BYTES, 'Das Logo darf höchstens 1 MB groß sein');
+        const saved = await logo.save(data, req.headers['content-type']);
+        return sendJson(res, 200, { logo: logoInfo(saved) });
+      }
+      if (method === 'DELETE') {
+        requireCsrf(req, session);
+        await logo.remove();
+        return sendJson(res, 200, { logo: null });
+      }
+      throw methodNotAllowed('PUT, DELETE');
     }
 
     if (pathname === `${API_PREFIX}/rooms`) {
@@ -165,6 +193,12 @@ function sessionCookie(req, id) {
 function clearCookie(req) {
   const secure = isHttps(req) ? '; Secure' : '';
   return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure}`;
+}
+
+/** Öffentliche Angaben zum Logo; die Version im Link umgeht alte Caches. */
+export function logoInfo(current) {
+  if (!current) return null;
+  return { url: `/logo?v=${encodeURIComponent(current.etag.replaceAll('"', ''))}` };
 }
 
 function methodNotAllowed(allow) {

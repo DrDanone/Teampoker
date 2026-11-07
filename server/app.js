@@ -2,7 +2,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createAdminApi } from './admin/routes.js';
+import { createAdminApi, logoInfo } from './admin/routes.js';
 import { sendJson, sendText } from './http.js';
 import { PokerHub } from './poker/hub.js';
 import { createStaticHandler } from './static.js';
@@ -17,15 +17,17 @@ const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
  * @param {ReturnType<import('./config.js').loadConfig>} config
  * @param {object} deps
  * @param {import('./rooms/store.js').RoomStore} deps.rooms geladener Raum-Speicher
+ * @param {import('./branding/logo.js').LogoStore} deps.logo geladener Logo-Speicher
  * @param {Parameters<typeof createAdminApi>[0]['sessions']} [deps.sessions]
  * @param {Parameters<typeof createAdminApi>[0]['loginLimiter']} [deps.loginLimiter]
  * @param {Partial<ConstructorParameters<typeof PokerHub>[0]>} [deps.hubOptions]
  */
-export function createApp(config, { rooms, sessions, loginLimiter, hubOptions = {} }) {
+export function createApp(config, { rooms, logo, sessions, loginLimiter, hubOptions = {} }) {
   const serveStatic = createStaticHandler(PUBLIC_DIR);
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
     rooms,
+    logo,
     adminPassword: config.adminPassword,
     sessions,
     loginLimiter,
@@ -35,6 +37,10 @@ export function createApp(config, { rooms, sessions, loginLimiter, hubOptions = 
     const { pathname } = new URL(req.url ?? '/', 'http://localhost');
 
     if (await handleAdminApi(req, res, pathname)) return;
+    if (pathname === '/api/branding' && req.method === 'GET') {
+      sendJson(res, 200, { logo: logoInfo(logo.get()) });
+      return;
+    }
     if (pathname.startsWith('/api/')) {
       sendJson(res, 404, { error: 'Nicht gefunden' });
       return;
@@ -47,6 +53,11 @@ export function createApp(config, { rooms, sessions, loginLimiter, hubOptions = 
 
     if (pathname === '/healthz') {
       sendText(res, 200, 'ok');
+      return;
+    }
+
+    if (pathname === '/logo') {
+      serveLogo(req, res, logo.get());
       return;
     }
 
@@ -87,4 +98,30 @@ export function createApp(config, { rooms, sessions, loginLimiter, hubOptions = 
   }
 
   return { server, close, hub };
+}
+
+/**
+ * Liefert das Logo aus. Die CSP mit `sandbox` verhindert, dass ein SVG beim
+ * direkten Aufruf Skripte im Kontext der Website ausführt.
+ */
+function serveLogo(req, res, current) {
+  if (!current) {
+    sendText(res, 404, 'Kein Logo');
+    return;
+  }
+  const headers = {
+    'Content-Type': current.type,
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy':
+      "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox",
+    'Cache-Control': 'no-cache',
+    ETag: current.etag,
+  };
+  if (req.headers['if-none-match'] === current.etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+  res.writeHead(200, { ...headers, 'Content-Length': current.data.length });
+  res.end(req.method === 'HEAD' ? undefined : current.data);
 }
