@@ -4,11 +4,43 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Wilkenpoker</title>
+    <link rel="stylesheet" href="/app.css" />
+    <script src="/app.js" type="module"></script>
   </head>
   <body>
-    <main>
+    <header class="topbar">
       <h1>Wilkenpoker</h1>
-      <p>Hier entsteht das Planning Poker für die Refinements.</p>
+      <span id="room-title" class="room-title"></span>
+    </header>
+
+    <main>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <section id="join-view" hidden>
+        <h2>Raum beitreten</h2>
+        <form id="join-form" novalidate>
+          <label for="code">Raum-Code</label>
+          <input
+            id="code"
+            name="code"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            maxlength="12"
+            placeholder="z. B. AB3D5F7H"
+            required
+          />
+          <label for="name">Dein Name</label>
+          <input id="name" name="name" autocomplete="nickname" maxlength="30" required />
+          <button type="submit">Beitreten</button>
+        </form>
+      </section>
+
+      <section id="room-view" hidden>
+        <h2>Im Raum</h2>
+        <ul id="participants" class="participants"></ul>
+        <button id="leave" type="button" class="button-secondary">Raum verlassen</button>
+      </section>
     </main>
   </body>
 </html>

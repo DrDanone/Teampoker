@@ -4,10 +4,12 @@ import { fileURLToPath } from 'node:url';
 
 import { createAdminApi } from './admin/routes.js';
 import { sendJson, sendText } from './http.js';
+import { PokerHub } from './poker/hub.js';
 import { createStaticHandler } from './static.js';
 import { attachWebSocket } from './ws.js';
 
 const PUBLIC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public');
+const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
 
 /**
  * Erstellt den HTTP-Server mit WebSocket-Endpunkt, startet ihn aber noch nicht.
@@ -17,9 +19,11 @@ const PUBLIC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
  * @param {import('./rooms/store.js').RoomStore} deps.rooms geladener Raum-Speicher
  * @param {Parameters<typeof createAdminApi>[0]['sessions']} [deps.sessions]
  * @param {Parameters<typeof createAdminApi>[0]['loginLimiter']} [deps.loginLimiter]
+ * @param {Partial<ConstructorParameters<typeof PokerHub>[0]>} [deps.hubOptions]
  */
-export function createApp(config, { rooms, sessions, loginLimiter }) {
+export function createApp(config, { rooms, sessions, loginLimiter, hubOptions = {} }) {
   const serveStatic = createStaticHandler(PUBLIC_DIR);
+  const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
     rooms,
     adminPassword: config.adminPassword,
@@ -52,6 +56,11 @@ export function createApp(config, { rooms, sessions, loginLimiter }) {
       return;
     }
 
+    // Einladungslink: Startseite ausliefern, der Code wird im Browser übernommen.
+    if (JOIN_PATH.test(pathname)) {
+      if (await serveStatic(req, res, '/index.html')) return;
+    }
+
     if (await serveStatic(req, res, pathname)) return;
 
     sendText(res, 404, 'Nicht gefunden');
@@ -67,14 +76,15 @@ export function createApp(config, { rooms, sessions, loginLimiter }) {
     }
   });
 
-  const wss = attachWebSocket(server);
+  const wss = attachWebSocket(server, { hub });
 
   /** Beendet Server und alle WebSocket-Verbindungen. */
   async function close() {
+    hub.close();
     for (const client of wss.clients) client.terminate();
     await new Promise((resolve) => wss.close(resolve));
     await new Promise((resolve) => server.close(resolve));
   }
 
-  return { server, close };
+  return { server, close, hub };
 }

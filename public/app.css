@@ -1,0 +1,129 @@
+/* Vorläufige, schlichte Gestaltung. Das GY-Utility-Design folgt mit Issue #7. */
+
+:root {
+  --purple: #951b81;
+  --deep-blue: #081950;
+  --magenta: #d71482;
+  --gray-100: #f2f2f2;
+  --gray-300: #d1d1d1;
+  --gray-600: #747474;
+  font-family: Aptos, 'Aptos Display', 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: #000;
+}
+
+body {
+  margin: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-300);
+}
+
+h1 {
+  font-size: 1.25rem;
+  color: var(--purple);
+  margin: 0;
+}
+
+.room-title {
+  font-weight: 700;
+  color: var(--deep-blue);
+}
+
+main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+form {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 24rem;
+}
+
+label {
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+input {
+  font: inherit;
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+}
+
+#code {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--purple);
+  border-radius: 8px;
+  background: var(--purple);
+  color: #fff;
+  cursor: pointer;
+  justify-self: start;
+}
+
+form button {
+  margin-top: 0.75rem;
+}
+
+.button-secondary {
+  background: #fff;
+  color: var(--purple);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--deep-blue);
+  outline-offset: 2px;
+}
+
+.status {
+  min-height: 1.5rem;
+}
+
+.status-error {
+  color: var(--magenta);
+}
+
+.participants {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.participant {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--gray-300);
+  border-radius: 12px;
+}
+
+.participant.you {
+  border-color: var(--purple);
+}
+
+.participant.offline {
+  color: var(--gray-600);
+  border-style: dashed;
+}
+
+.suffix {
+  color: var(--gray-600);
+}
+
+[hidden] {
+  display: none !important;
+}
