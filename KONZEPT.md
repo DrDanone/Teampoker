@@ -88,7 +88,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 - **Frontend:** schlanke Web-Oberfläche ohne schweres Framework.
 - **Persistenz:** eine JSON-Datei für Räume auf einem Volume.
 - **Betrieb:** ein Docker-Container plus `docker-compose.yml` für ZimaOS.
-  - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`, optional `ADMIN_NETWORKS`, `TRUSTED_PROXIES`.
+  - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`, `PUBLIC_URL` (öffentliche Adresse für Einladungslinks), optional `ADMIN_NETWORKS`, `TRUSTED_PROXIES`.
   - Image `ghcr.io/drdanone/wilkenpoker`, öffentlich, gebaut von GitHub Actions.
   - Volume: `/data`.
 
@@ -96,7 +96,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 
 1. App lokal bauen und testen.
 2. Dockerfile und Compose-Datei; Installation auf ZimaOS.
-3. Zugriff von außen entscheiden (Heimnetz, VPN oder Tunnel) und einrichten.
+3. Zugriff von außen über den Cloudflare Tunnel einrichten (siehe `docs/ZIMAOS.md`).
 
 ## Offene Punkte
 
