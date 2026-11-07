@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createAdminApi, logoInfo } from './admin/routes.js';
 import { sendJson, sendText } from './http.js';
 import { PokerHub } from './poker/hub.js';
+import { applySecurityHeaders } from './security.js';
 import { createStaticHandler } from './static.js';
 import { attachWebSocket } from './ws.js';
 
@@ -21,8 +22,12 @@ const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
  * @param {Parameters<typeof createAdminApi>[0]['sessions']} [deps.sessions]
  * @param {Parameters<typeof createAdminApi>[0]['loginLimiter']} [deps.loginLimiter]
  * @param {Partial<ConstructorParameters<typeof PokerHub>[0]>} [deps.hubOptions]
+ * @param {{ limits?: Partial<import('./ws.js').LIMITS> }} [deps.wsOptions]
  */
-export function createApp(config, { rooms, logo, sessions, loginLimiter, hubOptions = {} }) {
+export function createApp(
+  config,
+  { rooms, logo, sessions, loginLimiter, hubOptions = {}, wsOptions = {} },
+) {
   const serveStatic = createStaticHandler(PUBLIC_DIR);
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
@@ -78,6 +83,7 @@ export function createApp(config, { rooms, logo, sessions, loginLimiter, hubOpti
   }
 
   const server = http.createServer(async (req, res) => {
+    applySecurityHeaders(req, res);
     try {
       await handleRequest(req, res);
     } catch (error) {
@@ -87,7 +93,11 @@ export function createApp(config, { rooms, logo, sessions, loginLimiter, hubOpti
     }
   });
 
-  const wss = attachWebSocket(server, { hub });
+  const wss = attachWebSocket(server, { hub, ...wsOptions });
+
+  // Langsame oder hängende Anfragen nicht ewig offen halten.
+  server.headersTimeout = 20_000;
+  server.requestTimeout = 30_000;
 
   /** Beendet Server und alle WebSocket-Verbindungen. */
   async function close() {
