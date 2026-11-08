@@ -1,9 +1,9 @@
-# CLAUDE.md – Wilkenpoker
+# CLAUDE.md – Teampoker
 
 Planning-Poker-Website für die wöchentlichen Refinements von Markus (Product Owner des ESM-Teams bei Wilken). Teams schätzen verdeckt die Komplexität eines Tickets, decken gemeinsam auf und diskutieren Ausreißer. Mehrere Teams nutzen je einen eigenen Raum.
 
 - Konzept: `KONZEPT.md`; Arbeitspakete: GitHub-Issues.
-- Betrieb: Docker-Container auf Markus' ZimaOS-Server, Image `ghcr.io/drdanone/wilkenpoker` (öffentlich), Zugriff über Markus' Cloudflare Tunnel. Anleitung: `docs/ZIMAOS.md`.
+- Betrieb: Docker-Container auf Markus' ZimaOS-Server, Image `ghcr.io/drdanone/teampoker` (öffentlich), Zugriff über Markus' Cloudflare Tunnel. Anleitung: `docs/ZIMAOS.md`.
 - Sprache in Code-Kommentaren, Oberfläche, Commits, PRs und Antworten: **Deutsch**.
 
 ## Befehle

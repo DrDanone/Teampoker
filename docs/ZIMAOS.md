@@ -1,14 +1,14 @@
-# Wilkenpoker auf ZimaOS installieren
+# Teampoker auf ZimaOS installieren
 
-Wilkenpoker läuft als ein Docker-Container. Diese Anleitung beschreibt die Installation auf ZimaOS; auf jedem anderen Docker-Host funktioniert es genauso.
+Teampoker läuft als ein Docker-Container. Diese Anleitung beschreibt die Installation auf ZimaOS; auf jedem anderen Docker-Host funktioniert es genauso.
 
 ## Überblick
 
 | Was                  | Wert                                                      |
 | -------------------- | --------------------------------------------------------- |
-| Image                | `ghcr.io/drdanone/wilkenpoker:latest`                     |
+| Image                | `ghcr.io/drdanone/teampoker:latest`                       |
 | Port im Container    | `3000` (in der Compose-Datei auf `8090` gelegt)           |
-| Daten (Räume, Logo)  | Volume `/data` → `/DATA/AppData/wilkenpoker`              |
+| Daten (Räume, Logo)  | Volume `/data` → `/DATA/AppData/teampoker`                |
 | Pflicht-Einstellung  | `ADMIN_PASSWORD`, mindestens 12 Zeichen                   |
 | Verwaltung           | `http://<server>:8090/admin/` – **nur im Heimnetz**       |
 | Zugriff für das Team | `https://poker.<deine-domain>` über den Cloudflare Tunnel |
@@ -19,7 +19,7 @@ Das Image wird von GitHub Actions bei jedem Merge auf `main` gebaut (für `amd64
 
 Das Image wird beim ersten Merge auf `main` veröffentlicht – zunächst privat, weil das Repository privat ist. Damit ZimaOS es ohne Token laden kann, die Sichtbarkeit einmalig umstellen:
 
-1. Auf GitHub ins eigene Profil → Reiter **Packages** → **wilkenpoker**.
+1. Auf GitHub ins eigene Profil → Reiter **Packages** → **teampoker**.
 2. **Package settings** → ganz unten **Change visibility** → **Public** → mit dem Paketnamen bestätigen.
 
 Danach kann jeder das Image laden und den Code darin einsehen; das Repository selbst (Issues, Historie) bleibt privat. Geheimnisse stehen nicht im Image – das Passwort kommt erst über die Compose-Datei hinzu.
@@ -44,8 +44,8 @@ Das Repository ist privat, deshalb ist auch das Image zunächst privat. ZimaOS k
 Der Container läuft aus Sicherheitsgründen nicht als root, sondern als Benutzer mit der ID 1000. Der Datenordner muss diesem Benutzer gehören:
 
 ```bash
-sudo mkdir -p /DATA/AppData/wilkenpoker
-sudo chown 1000:1000 /DATA/AppData/wilkenpoker
+sudo mkdir -p /DATA/AppData/teampoker
+sudo chown 1000:1000 /DATA/AppData/teampoker
 ```
 
 Fehlt das, bricht der Container beim Start mit einer klaren Meldung ab („Datenverzeichnis … ist nicht beschreibbar“).
@@ -57,12 +57,12 @@ Fehlt das, bricht der Container beim Start mit einer klaren Meldung ab („Daten
 **Oder per SSH:**
 
 ```bash
-mkdir -p ~/wilkenpoker && cd ~/wilkenpoker
+mkdir -p ~/teampoker && cd ~/teampoker
 # docker-compose.yml aus dem Repository hierher kopieren und ADMIN_PASSWORD eintragen
 docker compose up -d
 ```
 
-Ohne `ADMIN_PASSWORD` startet Wilkenpoker absichtlich nicht.
+Ohne `ADMIN_PASSWORD` startet Teampoker absichtlich nicht.
 
 `PUBLIC_URL` auf die öffentliche Adresse setzen, z. B. `https://poker.<deine-domain>`. Die Verwaltung läuft nur im Heimnetz – ohne diese Angabe würden kopierte Einladungslinks auf die Heimnetz-Adresse zeigen und bei Kollegen außerhalb nicht funktionieren.
 
@@ -80,7 +80,7 @@ Ohne `ADMIN_PASSWORD` startet Wilkenpoker absichtlich nicht.
 **SSH:**
 
 ```bash
-cd ~/wilkenpoker
+cd ~/teampoker
 docker compose pull
 docker compose up -d
 ```
@@ -92,7 +92,7 @@ Räume und Logo bleiben erhalten, sie liegen im Datenordner. Laufende Schätzrun
 Es reicht, den Datenordner zu sichern:
 
 ```bash
-tar czf wilkenpoker-backup.tgz -C /DATA/AppData wilkenpoker
+tar czf teampoker-backup.tgz -C /DATA/AppData teampoker
 ```
 
 Er enthält `rooms.json` (Räume und Codes) und das Logo. Schätzungen werden nie gespeichert.
@@ -106,8 +106,8 @@ Hinweis: Umgebungsvariablen sind für jeden mit Docker-Zugriff auf dem Server si
 ## Fehlersuche
 
 ```bash
-docker logs wilkenpoker          # Meldungen beim Start
-docker inspect --format '{{.State.Health.Status}}' wilkenpoker   # healthy?
+docker logs teampoker          # Meldungen beim Start
+docker inspect --format '{{.State.Health.Status}}' teampoker   # healthy?
 ```
 
 | Meldung                                     | Ursache und Lösung                                                                         |
@@ -121,15 +121,15 @@ docker inspect --format '{{.State.Health.Status}}' wilkenpoker   # healthy?
 
 ## Zugriff von außen über den Cloudflare Tunnel
 
-Die Entwickler erreichen Wilkenpoker über den bestehenden Cloudflare Tunnel unter einer eigenen Subdomain, z. B. `https://poker.<deine-domain>`. HTTPS übernimmt Cloudflare. Am Router wird **kein Port** freigegeben.
+Die Entwickler erreichen Teampoker über den bestehenden Cloudflare Tunnel unter einer eigenen Subdomain, z. B. `https://poker.<deine-domain>`. HTTPS übernimmt Cloudflare. Am Router wird **kein Port** freigegeben.
 
 ### Public Hostname anlegen
 
 1. [Cloudflare Zero Trust](https://one.dash.cloudflare.com) → **Networks → Tunnels** → den bestehenden Tunnel → **Public Hostname** (bzw. „Published application routes“) → **Add**.
 2. Eintragen:
    - **Subdomain:** `poker` (oder nach Wunsch), **Domain:** deine Domain
-   - **Service:** Typ `HTTP`, URL `<ZimaOS-IP>:8090` (läuft `cloudflared` als Container im selben Docker-Netz wie Wilkenpoker, geht auch `wilkenpoker:3000`)
-3. Unter **Additional application settings → HTTP Settings** das Feld **HTTP Host Header leer lassen**. Wilkenpoker prüft, dass Anfragen von der eigenen Domain kommen; ein überschriebener Host-Header würde das stören.
+   - **Service:** Typ `HTTP`, URL `<ZimaOS-IP>:8090` (läuft `cloudflared` als Container im selben Docker-Netz wie Teampoker, geht auch `teampoker:3000`)
+3. Unter **Additional application settings → HTTP Settings** das Feld **HTTP Host Header leer lassen**. Teampoker prüft, dass Anfragen von der eigenen Domain kommen; ein überschriebener Host-Header würde das stören.
 4. Speichern.
 
 ### Einstellungen der Domain prüfen
@@ -147,10 +147,10 @@ Im Cloudflare-Dashboard der Domain:
 
 ### Wie die Verwaltung geschützt ist
 
-Wilkenpoker erkennt Anfragen über den Tunnel an dem Header `CF-Connecting-IP`, den Cloudflare immer setzt und den ein Angreifer nicht unterdrücken kann. Für solche Anfragen gibt es die Verwaltung nicht (Antwort 404). Direkt erreichbar ist sie nur aus den Netzen in `ADMIN_NETWORKS` – standardmäßig die privaten Netze (Heimnetz, Docker). Zusätzlich braucht es weiterhin das Passwort.
+Teampoker erkennt Anfragen über den Tunnel an dem Header `CF-Connecting-IP`, den Cloudflare immer setzt und den ein Angreifer nicht unterdrücken kann. Für solche Anfragen gibt es die Verwaltung nicht (Antwort 404). Direkt erreichbar ist sie nur aus den Netzen in `ADMIN_NETWORKS` – standardmäßig die privaten Netze (Heimnetz, Docker). Zusätzlich braucht es weiterhin das Passwort.
 
-Über den Header ermittelt Wilkenpoker auch die echte Adresse der Teilnehmer. Die Sperren nach falschen Codes treffen deshalb nur den Verursacher und nicht alle, die über den Tunnel kommen.
+Über den Header ermittelt Teampoker auch die echte Adresse der Teilnehmer. Die Sperren nach falschen Codes treffen deshalb nur den Verursacher und nicht alle, die über den Tunnel kommen.
 
 ### Optional: nur für Kolleginnen und Kollegen
 
-Mit **Cloudflare Access** (Zero Trust → Access → Applications) lässt sich vor `poker.<deine-domain>` eine Anmeldung per E-Mail-Code schalten, z. B. nur für Adressen der Firmen-Domain. Wilkenpoker braucht dafür keine Änderung.
+Mit **Cloudflare Access** (Zero Trust → Access → Applications) lässt sich vor `poker.<deine-domain>` eine Anmeldung per E-Mail-Code schalten, z. B. nur für Adressen der Firmen-Domain. Teampoker braucht dafür keine Änderung.

@@ -17,7 +17,7 @@ export const TEST_PASSWORD = 'test-passwort-123';
  * @param {object} [options.deps] zusätzliche Abhängigkeiten für createApp
  */
 export async function startTestServer({ env = {}, deps = {} } = {}) {
-  const dataDir = await mkdtemp(path.join(os.tmpdir(), 'wilkenpoker-'));
+  const dataDir = await mkdtemp(path.join(os.tmpdir(), 'teampoker-'));
   const config = loadConfig({
     PORT: '0',
     ADMIN_PASSWORD: TEST_PASSWORD,

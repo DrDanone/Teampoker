@@ -1,6 +1,6 @@
-# Wilkenpoker
+# Teampoker
 
-Planning Poker für die Refinements: Teams schätzen verdeckt, decken gemeinsam auf und diskutieren die Ausreißer. Das Konzept steht in [`KONZEPT.md`](KONZEPT.md), die Arbeitspakete in den [Issues](https://github.com/DrDanone/Wilkenpoker/issues).
+Planning Poker für die Refinements: Teams schätzen verdeckt, decken gemeinsam auf und diskutieren die Ausreißer. Das Konzept steht in [`KONZEPT.md`](KONZEPT.md), die Arbeitspakete in den [Issues](https://github.com/DrDanone/Teampoker/issues).
 
 ## Voraussetzungen
 
