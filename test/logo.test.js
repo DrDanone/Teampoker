@@ -180,7 +180,7 @@ describe('LogoStore', () => {
     const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
     const os = await import('node:os');
     const path = await import('node:path');
-    const dir = await mkdtemp(path.join(os.tmpdir(), 'wilkenpoker-'));
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'teampoker-'));
     try {
       await writeFile(path.join(dir, 'logo.json'), JSON.stringify({ type: 'image/svg+xml' }));
       await writeFile(path.join(dir, 'logo.bin'), '<svg><script>x</script></svg>');

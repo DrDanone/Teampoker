@@ -4,8 +4,8 @@ import { loadBranding } from './branding.js';
 
 const $ = (selector) => document.querySelector(selector);
 
-const NAME_KEY = 'wilkenpoker:name';
-const SESSION_KEY = 'wilkenpoker:session';
+const NAME_KEY = 'teampoker:name';
+const SESSION_KEY = 'teampoker:session';
 const RECONNECT_DELAYS_MS = [500, 1000, 2000, 5000, 10000];
 
 /** localStorage kann gesperrt sein (z. B. privater Modus) – dann ohne Merken. */
@@ -76,7 +76,7 @@ function showJoin({ code = '', message = '', isError = false } = {}) {
   $('#room-view').hidden = true;
   $('#room-title').textContent = '';
   $('#leave').hidden = true;
-  document.title = 'Wilkenpoker';
+  document.title = 'Teampoker';
   if (code) $('#code').value = code;
   $('#name').value ||= storage.get(NAME_KEY) ?? '';
   setStatus(message, isError);
@@ -183,7 +183,7 @@ function renderState({ room, round, revealed, participants, yourVote, result }) 
   state.yourVote = yourVote;
 
   $('#room-title').textContent = room.name;
-  document.title = `${room.name} – Wilkenpoker`;
+  document.title = `${room.name} – Teampoker`;
 
   const voted = participants.filter((p) => p.voted).length;
   $('#progress').textContent = revealed

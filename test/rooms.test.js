@@ -43,7 +43,7 @@ describe('Raum-Codes', () => {
 describe('RoomStore', () => {
   let dataDir;
   beforeEach(async () => {
-    dataDir = await mkdtemp(path.join(os.tmpdir(), 'wilkenpoker-'));
+    dataDir = await mkdtemp(path.join(os.tmpdir(), 'teampoker-'));
   });
   afterEach(async () => {
     await chmod(dataDir, 0o700).catch(() => {});

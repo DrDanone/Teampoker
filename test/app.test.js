@@ -43,7 +43,7 @@ describe('HTTP-Server', () => {
     const res = await fetch(`${server.baseUrl}/`);
     assert.equal(res.status, 200);
     assert.match(res.headers.get('content-type'), /text\/html/);
-    assert.match(await res.text(), /Wilkenpoker/);
+    assert.match(await res.text(), /Teampoker/);
   });
 
   it('meldet den Gesundheitszustand', async () => {

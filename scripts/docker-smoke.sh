@@ -6,7 +6,7 @@
 set -euo pipefail
 
 IMAGE="${1:?Image fehlt}"
-NAME="wilkenpoker-smoke"
+NAME="teampoker-smoke"
 PASSWORD="smoke-test-passwort-123"
 PORT=18090
 DATA="$(mktemp -d)"

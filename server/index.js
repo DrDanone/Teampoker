@@ -21,7 +21,7 @@ try {
 const { server, close } = createApp(config, { rooms, logo });
 
 server.listen(config.port, () => {
-  console.log(`Wilkenpoker läuft auf Port ${server.address().port}`);
+  console.log(`Teampoker läuft auf Port ${server.address().port}`);
 });
 
 let shuttingDown = false;

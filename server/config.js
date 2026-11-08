@@ -34,7 +34,7 @@ export function loadConfig(env = process.env) {
 
 function parseAdminPassword(value) {
   if (!value) {
-    throw new Error('ADMIN_PASSWORD ist nicht gesetzt. Ohne Passwort startet Wilkenpoker nicht.');
+    throw new Error('ADMIN_PASSWORD ist nicht gesetzt. Ohne Passwort startet Teampoker nicht.');
   }
   if ([...value].length < MIN_ADMIN_PASSWORD_LENGTH) {
     throw new Error(

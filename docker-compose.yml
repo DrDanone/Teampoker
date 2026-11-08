@@ -1,16 +1,16 @@
-# Wilkenpoker für ZimaOS (oder jeden anderen Docker-Host).
+# Teampoker für ZimaOS (oder jeden anderen Docker-Host).
 # Anleitung: docs/ZIMAOS.md
-name: wilkenpoker
+name: teampoker
 
 services:
-  wilkenpoker:
-    image: ghcr.io/drdanone/wilkenpoker:latest
-    container_name: wilkenpoker
+  teampoker:
+    image: ghcr.io/drdanone/teampoker:latest
+    container_name: teampoker
     restart: unless-stopped
 
     environment:
       # Pflicht: Passwort für die Verwaltung unter /admin/, mindestens 12 Zeichen.
-      # Ohne Passwort startet Wilkenpoker absichtlich nicht.
+      # Ohne Passwort startet Teampoker absichtlich nicht.
       ADMIN_PASSWORD: ''
       PORT: '3000'
       # Öffentliche Adresse über den Cloudflare Tunnel – damit kopierte
@@ -28,7 +28,7 @@ services:
 
     volumes:
       # Räume und Logo. Der Ordner muss dem Benutzer mit UID 1000 gehören.
-      - /DATA/AppData/wilkenpoker:/data
+      - /DATA/AppData/teampoker:/data
 
     # Härtung: unprivilegierter Benutzer, schreibgeschütztes Dateisystem
     # (außer /data und /tmp), keine Linux-Capabilities.
@@ -43,15 +43,15 @@ services:
 
 # Angaben für die App-Übersicht von ZimaOS/CasaOS (optional).
 x-casaos:
-  main: wilkenpoker
+  main: teampoker
   architectures:
     - amd64
     - arm64
   author: DrDanone
   category: Utilities
   title:
-    en_us: Wilkenpoker
-    de_de: Wilkenpoker
+    en_us: Teampoker
+    de_de: Teampoker
   description:
     en_us: Planning Poker for refinements.
     de_de: Planning Poker für die Refinements.

@@ -1,4 +1,4 @@
-# Wilkenpoker – Konzept
+# Teampoker – Konzept
 
 Planning-Poker-Website für die wöchentlichen Refinements. Teams schätzen verdeckt die Komplexität eines Tickets, decken gemeinsam auf und diskutieren die Ausreißer.
 
@@ -89,7 +89,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 - **Persistenz:** eine JSON-Datei für Räume auf einem Volume.
 - **Betrieb:** ein Docker-Container plus `docker-compose.yml` für ZimaOS.
   - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`, `PUBLIC_URL` (öffentliche Adresse für Einladungslinks), optional `ADMIN_NETWORKS`, `TRUSTED_PROXIES`.
-  - Image `ghcr.io/drdanone/wilkenpoker`, öffentlich, gebaut von GitHub Actions.
+  - Image `ghcr.io/drdanone/teampoker`, öffentlich, gebaut von GitHub Actions.
   - Volume: `/data`.
 
 ## Umsetzung in Schritten

@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/drdanone/wilkenpoker
+  IMAGE: ghcr.io/drdanone/teampoker
 
 jobs:
   smoke-test:
@@ -24,11 +24,11 @@ jobs:
         with:
           context: .
           load: true
-          tags: wilkenpoker:test
+          tags: teampoker:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Rauchtest
-        run: bash scripts/docker-smoke.sh wilkenpoker:test
+        run: bash scripts/docker-smoke.sh teampoker:test
 
   publish:
     name: Image veröffentlichen
