@@ -39,7 +39,11 @@ export function createApp(
     isDenied: (req, relativePath) =>
       isAdminFile(relativePath) && !isAdminAllowed(req, config.adminNetworks),
     // Seitenname schon im HTML, damit nichts flackert und der Titel stimmt.
-    transformHtml: (html) => html.replaceAll(SITE_NAME_PLACEHOLDER, escapeHtml(siteName.get())),
+    transformHtml: (html) => {
+      const name = escapeHtml(siteName.get());
+      // Ersetzungsfunktion statt Text: `$&`, `$$` usw. im Namen nicht als Muster deuten.
+      return html.replaceAll(SITE_NAME_PLACEHOLDER, () => name);
+    },
   });
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({

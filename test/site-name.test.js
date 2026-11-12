@@ -112,6 +112,17 @@ describe('Seitenname', () => {
     assert.ok(html.includes(`class="brand">${escapeHtml(evil)}</p>`));
   });
 
+  it('übernimmt $-Zeichen unverändert (keine Ersetzungsmuster)', async () => {
+    const name = "Team $& $$ $` $' Co";
+    assert.equal((await setName(name)).status, 200);
+    for (const pathname of ['/', '/admin/']) {
+      const html = await page(pathname);
+      assert.ok(html.includes(`class="brand">${escapeHtml(name)}</p>`), pathname);
+      assert.doesNotMatch(html, /SITE_NAME/, pathname);
+    }
+    assert.ok((await page('/')).includes(`<title>${escapeHtml(name)}</title>`));
+  });
+
   it('stellt mit leerem Namen den Standard wieder her', async () => {
     await setName('Team ESM');
     const res = await setName('   ');
