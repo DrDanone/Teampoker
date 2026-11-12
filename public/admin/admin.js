@@ -1,7 +1,7 @@
 // Verwaltung der Räume durch den Superadmin.
 // Alle Texte werden über textContent gesetzt, nie als HTML.
 
-import { loadBranding, showLogo } from '../branding.js';
+import { loadBranding, showLogo, showSiteName } from '../branding.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -74,9 +74,27 @@ async function loadRooms() {
 
 async function loadLogo() {
   const res = await fetch('/api/branding');
-  const { logo } = await res.json();
+  const { logo, name } = await res.json();
   renderLogo(logo);
+  renderSiteName(name);
 }
+
+function renderSiteName(name) {
+  showSiteName(name);
+  document.title = `Verwaltung – ${name}`;
+  $('#site-name-input').value = name;
+}
+
+$('#name-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  try {
+    const { name } = await api('PUT', '/name', { name: $('#site-name-input').value });
+    renderSiteName(name);
+    setStatus(`Name der Seite: „${name}“.`);
+  } catch (error) {
+    setStatus(error.message, true);
+  }
+});
 
 function renderLogo(logo) {
   const preview = $('#logo-preview');

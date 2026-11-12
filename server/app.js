@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { createAdminApi, logoInfo } from './admin/routes.js';
-import { sendJson, sendText } from './http.js';
+import { escapeHtml, sendJson, sendText } from './http.js';
 import { isAdminAllowed, resolveClientIp } from './network.js';
 import { PokerHub } from './poker/hub.js';
 import { applySecurityHeaders } from './security.js';
@@ -12,6 +12,8 @@ import { attachWebSocket } from './ws.js';
 
 const PUBLIC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public');
 const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
+/** Platzhalter in den HTML-Dateien für den Seitennamen. */
+export const SITE_NAME_PLACEHOLDER = '{{SITE_NAME}}';
 
 /**
  * Erstellt den HTTP-Server mit WebSocket-Endpunkt, startet ihn aber noch nicht.
@@ -20,6 +22,7 @@ const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
  * @param {object} deps
  * @param {import('./rooms/store.js').RoomStore} deps.rooms geladener Raum-Speicher
  * @param {import('./branding/logo.js').LogoStore} deps.logo geladener Logo-Speicher
+ * @param {import('./branding/site-name.js').SiteNameStore} deps.siteName geladener Seitenname
  * @param {Parameters<typeof createAdminApi>[0]['sessions']} [deps.sessions]
  * @param {Parameters<typeof createAdminApi>[0]['loginLimiter']} [deps.loginLimiter]
  * @param {Partial<ConstructorParameters<typeof PokerHub>[0]>} [deps.hubOptions]
@@ -27,7 +30,7 @@ const JOIN_PATH = /^\/join\/[A-Za-z0-9-]{1,32}\/?$/;
  */
 export function createApp(
   config,
-  { rooms, logo, sessions, loginLimiter, hubOptions = {}, wsOptions = {} },
+  { rooms, logo, siteName, sessions, loginLimiter, hubOptions = {}, wsOptions = {} },
 ) {
   // Zweite Sicherung: Dateien unter public/admin/ werden nur ausgeliefert,
   // wenn die Verwaltung für diese Anfrage erlaubt ist – unabhängig davon,
@@ -35,11 +38,18 @@ export function createApp(
   const serveStatic = createStaticHandler(PUBLIC_DIR, {
     isDenied: (req, relativePath) =>
       isAdminFile(relativePath) && !isAdminAllowed(req, config.adminNetworks),
+    // Seitenname schon im HTML, damit nichts flackert und der Titel stimmt.
+    transformHtml: (html) => {
+      const name = escapeHtml(siteName.get());
+      // Ersetzungsfunktion statt Text: `$&`, `$$` usw. im Namen nicht als Muster deuten.
+      return html.replaceAll(SITE_NAME_PLACEHOLDER, () => name);
+    },
   });
   const hub = new PokerHub({ rooms, ...hubOptions });
   const handleAdminApi = createAdminApi({
     rooms,
     logo,
+    siteName,
     adminPassword: config.adminPassword,
     publicUrl: config.publicUrl,
     sessions,
@@ -59,7 +69,7 @@ export function createApp(
 
     if (await handleAdminApi(req, res, pathname)) return;
     if (pathname === '/api/branding' && req.method === 'GET') {
-      sendJson(res, 200, { logo: logoInfo(logo.get()) });
+      sendJson(res, 200, { logo: logoInfo(logo.get()), name: siteName.get() });
       return;
     }
     if (pathname.startsWith('/api/')) {

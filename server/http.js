@@ -110,3 +110,10 @@ export function isHttps(req) {
 export function clientIp(req) {
   return req.clientIp ?? req.socket.remoteAddress ?? 'unbekannt';
 }
+
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+/** Maskiert Text für die Ausgabe in HTML (Inhalt und Attributwerte). */
+export function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
+}

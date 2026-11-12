@@ -10,10 +10,10 @@ Planning-Poker-Website für die wöchentlichen Refinements. Teams schätzen verd
 
 ## Rollen
 
-| Rolle               | Zugang                                                                                 | Rechte                                                                     |
-| ------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Superadmin (Markus) | `/admin/` – nur direkt im Heimnetz, nie über den Tunnel; Passwort aus `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen; Logo hochladen |
-| Teilnehmer          | Raum-Code + Name                                                                       | Schätzen, aufdecken, alle Schätzungen zurücksetzen                         |
+| Rolle               | Zugang                                                                                 | Rechte                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Superadmin (Markus) | `/admin/` – nur direkt im Heimnetz, nie über den Tunnel; Passwort aus `ADMIN_PASSWORD` | Räume anlegen, umbenennen, löschen; Raum-Code neu erzeugen; Logo hochladen; Seitennamen ändern |
+| Teilnehmer          | Raum-Code + Name                                                                       | Schätzen, aufdecken, alle Schätzungen zurücksetzen                                             |
 
 Alle Teilnehmer eines Raums sind gleichberechtigt. Es gibt keinen Zuschauer-Modus – jeder schätzt mit; wer nicht schätzen will, nimmt die Kaffeetasse.
 
@@ -58,6 +58,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 - Sprache Deutsch, keine Emojis in der Oberfläche; die Kaffeetassen-Karte nutzt das Material-Symbols-Icon.
 - Funktioniert auf Laptop und Smartphone.
 - **Logo:** lädt der Superadmin im Admin-Bereich hoch (PNG, JPG, WebP oder SVG, max. 1 MB); es steht links oben in der Ecke und ersetzt die Purple-Kurve. Ohne Logo bleibt die Kurve.
+- **Seitenname:** stellt der Superadmin im Admin-Bereich ein (max. 40 Zeichen, leer = „Teampoker“); er steht oben links und im Browser-Titel. Der Server setzt ihn schon ins HTML ein, damit beim Laden nichts flackert.
 - Keine Rundennummer in der Oberfläche; neben „Deine Karte“ steht, wie viele schon gewählt haben.
 - Schriften und Icons werden lokal ausgeliefert, nicht von Google-Servern geladen (DSGVO).
 
@@ -86,7 +87,7 @@ Corporate Design **GY Utility** (Design System in Claude):
 
 - **Backend:** Node.js, WebSockets für Live-Updates.
 - **Frontend:** schlanke Web-Oberfläche ohne schweres Framework.
-- **Persistenz:** eine JSON-Datei für Räume auf einem Volume.
+- **Persistenz:** JSON-Dateien für Räume und Seitenname sowie das Logo auf einem Volume.
 - **Betrieb:** ein Docker-Container plus `docker-compose.yml` für ZimaOS.
   - Umgebungsvariablen: `ADMIN_PASSWORD`, `PORT`, `PUBLIC_URL` (öffentliche Adresse für Einladungslinks), optional `ADMIN_NETWORKS`, `TRUSTED_PROXIES`.
   - Image `ghcr.io/drdanone/teampoker`, öffentlich, gebaut von GitHub Actions.

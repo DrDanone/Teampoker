@@ -111,7 +111,10 @@ describe('Logo-API', () => {
   }
 
   it('hat anfangs kein Logo', async () => {
-    assert.deepEqual(await (await fetch(`${server.baseUrl}/api/branding`)).json(), { logo: null });
+    assert.deepEqual(await (await fetch(`${server.baseUrl}/api/branding`)).json(), {
+      logo: null,
+      name: 'Teampoker',
+    });
     assert.equal((await fetch(`${server.baseUrl}/logo`)).status, 404);
   });
 

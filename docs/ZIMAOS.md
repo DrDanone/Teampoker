@@ -4,14 +4,14 @@ Teampoker läuft als ein Docker-Container. Diese Anleitung beschreibt die Instal
 
 ## Überblick
 
-| Was                  | Wert                                                      |
-| -------------------- | --------------------------------------------------------- |
-| Image                | `ghcr.io/drdanone/teampoker:latest`                       |
-| Port im Container    | `3000` (in der Compose-Datei auf `8090` gelegt)           |
-| Daten (Räume, Logo)  | Volume `/data` → `/DATA/AppData/teampoker`                |
-| Pflicht-Einstellung  | `ADMIN_PASSWORD`, mindestens 12 Zeichen                   |
-| Verwaltung           | `http://<server>:8090/admin/` – **nur im Heimnetz**       |
-| Zugriff für das Team | `https://poker.<deine-domain>` über den Cloudflare Tunnel |
+| Was                       | Wert                                                      |
+| ------------------------- | --------------------------------------------------------- |
+| Image                     | `ghcr.io/drdanone/teampoker:latest`                       |
+| Port im Container         | `3000` (in der Compose-Datei auf `8090` gelegt)           |
+| Daten (Räume, Logo, Name) | Volume `/data` → `/DATA/AppData/teampoker`                |
+| Pflicht-Einstellung       | `ADMIN_PASSWORD`, mindestens 12 Zeichen                   |
+| Verwaltung                | `http://<server>:8090/admin/` – **nur im Heimnetz**       |
+| Zugriff für das Team      | `https://poker.<deine-domain>` über den Cloudflare Tunnel |
 
 Das Image wird von GitHub Actions bei jedem Merge auf `main` gebaut (für `amd64` und `arm64`) und in der GitHub Container Registry veröffentlicht. Vorher läuft ein Rauchtest (`scripts/docker-smoke.sh`).
 
@@ -71,7 +71,7 @@ Ohne `ADMIN_PASSWORD` startet Teampoker absichtlich nicht.
 1. `http://<server>:8090/admin/` öffnen und mit dem Passwort anmelden.
 2. Einen Raum pro Team anlegen.
 3. Code oder Einladungslink an das Team schicken (der Link nutzt `PUBLIC_URL`).
-4. Optional ein Logo hochladen.
+4. Optional ein Logo hochladen und den Namen der Seite ändern (Standard „Teampoker“).
 
 ## Update
 
@@ -85,7 +85,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Räume und Logo bleiben erhalten, sie liegen im Datenordner. Laufende Schätzrunden gehen bei einem Neustart verloren – also nicht während eines Refinements aktualisieren.
+Räume, Logo und Seitenname bleiben erhalten, sie liegen im Datenordner. Laufende Schätzrunden gehen bei einem Neustart verloren – also nicht während eines Refinements aktualisieren.
 
 ## Sicherung
 
@@ -95,7 +95,7 @@ Es reicht, den Datenordner zu sichern:
 tar czf teampoker-backup.tgz -C /DATA/AppData teampoker
 ```
 
-Er enthält `rooms.json` (Räume und Codes) und das Logo. Schätzungen werden nie gespeichert.
+Er enthält `rooms.json` (Räume und Codes), das Logo und `site.json` (Name der Seite). Schätzungen werden nie gespeichert.
 
 ## Passwort ändern
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <meta name="theme-color" content="#951b81" />
-    <title>Verwaltung – Teampoker</title>
+    <title>Verwaltung – {{SITE_NAME}}</title>
     <link rel="stylesheet" href="/theme.css" />
     <link rel="stylesheet" href="/icons.css" />
     <link rel="stylesheet" href="/admin/admin.css" />
@@ -14,7 +14,7 @@
   <body>
     <header class="topbar">
       <span id="logo-slot" class="logo-slot"></span>
-      <p class="brand">Teampoker</p>
+      <p id="site-name" class="brand">{{SITE_NAME}}</p>
       <span class="topbar-context">Verwaltung</span>
       <span class="topbar-end">
         <button id="logout" type="button" class="button button-secondary button-small" hidden>
@@ -71,38 +71,57 @@
           <ul id="rooms" class="rooms"></ul>
         </section>
 
-        <section id="logo-view" class="box-outline logo-section" aria-labelledby="logo-title">
-          <h2 id="logo-title" class="section-title">Logo</h2>
-          <p class="hint">
-            Erscheint oben links auf allen Seiten. PNG, JPG, WebP oder SVG, höchstens 1 MB.
-          </p>
-          <div class="logo-preview">
-            <img id="logo-preview" alt="Aktuelles Logo" hidden />
-            <span id="logo-none" class="hint">Kein Logo hochgeladen.</span>
-          </div>
-          <form id="logo-form" class="stack">
-            <div class="field">
-              <label for="logo-file">Neues Logo</label>
-              <input
-                id="logo-file"
-                name="logo"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                required
-              />
-            </div>
-            <div class="button-row">
+        <div class="side">
+          <section id="name-view" class="box-outline" aria-labelledby="name-title">
+            <h2 id="name-title" class="section-title">Name der Seite</h2>
+            <p class="hint">
+              Erscheint oben links und im Browser-Titel. Leer lassen für „Teampoker“.
+            </p>
+            <form id="name-form" class="stack">
+              <div class="field">
+                <label for="site-name-input">Name</label>
+                <input id="site-name-input" name="name" maxlength="40" autocomplete="off" />
+              </div>
               <button type="submit" class="button">
-                <span class="icon icon-upload" aria-hidden="true"></span>
-                Hochladen
+                <span class="icon icon-check" aria-hidden="true"></span>
+                Speichern
               </button>
-              <button id="logo-remove" type="button" class="button button-danger" hidden>
-                <span class="icon icon-delete" aria-hidden="true"></span>
-                Entfernen
-              </button>
+            </form>
+          </section>
+
+          <section id="logo-view" class="box-outline logo-section" aria-labelledby="logo-title">
+            <h2 id="logo-title" class="section-title">Logo</h2>
+            <p class="hint">
+              Erscheint oben links auf allen Seiten. PNG, JPG, WebP oder SVG, höchstens 1 MB.
+            </p>
+            <div class="logo-preview">
+              <img id="logo-preview" alt="Aktuelles Logo" hidden />
+              <span id="logo-none" class="hint">Kein Logo hochgeladen.</span>
             </div>
-          </form>
-        </section>
+            <form id="logo-form" class="stack">
+              <div class="field">
+                <label for="logo-file">Neues Logo</label>
+                <input
+                  id="logo-file"
+                  name="logo"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  required
+                />
+              </div>
+              <div class="button-row">
+                <button type="submit" class="button">
+                  <span class="icon icon-upload" aria-hidden="true"></span>
+                  Hochladen
+                </button>
+                <button id="logo-remove" type="button" class="button button-danger" hidden>
+                  <span class="icon icon-delete" aria-hidden="true"></span>
+                  Entfernen
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
     </main>
 

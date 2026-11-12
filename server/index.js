@@ -3,22 +3,25 @@ import { access, constants, mkdir } from 'node:fs/promises';
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { LogoStore } from './branding/logo.js';
+import { SiteNameStore } from './branding/site-name.js';
 import { RoomStore } from './rooms/store.js';
 
 let config;
 let rooms;
 let logo;
+let siteName;
 try {
   config = loadConfig();
   await assertWritable(config.dataDir);
   rooms = await new RoomStore(config.dataDir).load();
   logo = await new LogoStore(config.dataDir).load();
+  siteName = await new SiteNameStore(config.dataDir).load();
 } catch (error) {
   console.error(`Start abgebrochen: ${error.message}`);
   process.exit(1);
 }
 
-const { server, close } = createApp(config, { rooms, logo });
+const { server, close } = createApp(config, { rooms, logo, siteName });
 
 server.listen(config.port, () => {
   console.log(`Teampoker läuft auf Port ${server.address().port}`);

@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const CONTENT_TYPES = {
@@ -25,10 +25,15 @@ const CONTENT_TYPES = {
  * @param {object} [options]
  * @param {(req: import('node:http').IncomingMessage, relativePath: string) => boolean} [options.isDenied]
  *   sperrt einzelne Dateien (Pfad relativ zu `rootDir`) für bestimmte Anfragen
+ * @param {(html: string) => string} [options.transformHtml]
+ *   verändert HTML-Dateien vor der Auslieferung (z. B. Seitenname einsetzen)
  * @returns {(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse, pathname: string) => Promise<boolean>}
  *   gibt `true` zurück, wenn eine Datei ausgeliefert wurde
  */
-export function createStaticHandler(rootDir, { isDenied = () => false } = {}) {
+export function createStaticHandler(
+  rootDir,
+  { isDenied = () => false, transformHtml = null } = {},
+) {
   const root = path.resolve(rootDir);
 
   return async function serveStatic(req, res, pathname) {
@@ -46,6 +51,17 @@ export function createStaticHandler(rootDir, { isDenied = () => false } = {}) {
 
     const type = CONTENT_TYPES[path.extname(filePath).toLowerCase()];
     if (!type) return false;
+
+    if (transformHtml && path.extname(filePath).toLowerCase() === '.html') {
+      const body = Buffer.from(transformHtml(await readFile(filePath, 'utf8')), 'utf8');
+      res.writeHead(200, {
+        'Content-Type': type,
+        'Content-Length': body.length,
+        'Cache-Control': 'no-cache',
+      });
+      res.end(req.method === 'HEAD' ? undefined : body);
+      return true;
+    }
 
     res.writeHead(200, {
       'Content-Type': type,
