@@ -1,4 +1,19 @@
-// Zeigt das vom Superadmin hochgeladene Logo oben links an (statt der Purple-Kurve).
+// Zeigt das vom Superadmin hochgeladene Logo oben links an (statt der Purple-Kurve)
+// und verwaltet den Seitennamen. Der Name steht schon im HTML (vom Server
+// eingesetzt), damit beim Laden nichts flackert.
+
+const DEFAULT_SITE_NAME = 'Teampoker';
+
+/** Der aktuell angezeigte Seitenname. */
+export function siteName() {
+  return document.querySelector('#site-name')?.textContent.trim() || DEFAULT_SITE_NAME;
+}
+
+/** Setzt den Seitennamen oben links (nur als Text, nie als HTML). */
+export function showSiteName(name) {
+  const element = document.querySelector('#site-name');
+  if (element) element.textContent = name;
+}
 
 /** @param {{ url: string } | null} logo */
 export function showLogo(logo) {

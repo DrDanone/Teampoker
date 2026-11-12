@@ -30,7 +30,7 @@ Danach ist die App unter <http://localhost:3000> erreichbar.
 | Variable          | Standard      | Bedeutung                                                                                                                       |
 | ----------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `PORT`            | `3000`        | Port des Servers                                                                                                                |
-| `DATA_DIR`        | `./data`      | Verzeichnis für Räume und Logo                                                                                                  |
+| `DATA_DIR`        | `./data`      | Verzeichnis für Räume, Logo und Seitenname                                                                                      |
 | `ADMIN_PASSWORD`  | –             | Passwort des Superadmins, Pflicht, mind. 12 Zeichen                                                                             |
 | `ADMIN_NETWORKS`  | private Netze | Netze, aus denen `/admin/` direkt erreichbar ist; über Tunnel/Proxy dann nicht. `*` = überall, auch über Tunnel/Proxy           |
 | `TRUSTED_PROXIES` | private Netze | Proxys/Tunnel, deren `CF-Connecting-IP` bzw. `X-Forwarded-For` als Client-Adresse gilt                                          |

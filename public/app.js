@@ -1,6 +1,6 @@
 // Oberfläche für Teilnehmer. Alle Texte werden über textContent gesetzt, nie als HTML.
 
-import { loadBranding } from './branding.js';
+import { loadBranding, siteName } from './branding.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -76,7 +76,7 @@ function showJoin({ code = '', message = '', isError = false } = {}) {
   $('#room-view').hidden = true;
   $('#room-title').textContent = '';
   $('#leave').hidden = true;
-  document.title = 'Teampoker';
+  document.title = siteName();
   if (code) $('#code').value = code;
   $('#name').value ||= storage.get(NAME_KEY) ?? '';
   setStatus(message, isError);
@@ -183,7 +183,7 @@ function renderState({ room, round, revealed, participants, yourVote, result }) 
   state.yourVote = yourVote;
 
   $('#room-title').textContent = room.name;
-  document.title = `${room.name} – Teampoker`;
+  document.title = `${room.name} – ${siteName()}`;
 
   const voted = participants.filter((p) => p.voted).length;
   $('#progress').textContent = revealed

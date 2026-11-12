@@ -198,7 +198,7 @@ function etagOf(data) {
   return `"${createHash('sha256').update(data).digest('base64url').slice(0, 22)}"`;
 }
 
-async function writeAtomic(filePath, data) {
+export async function writeAtomic(filePath, data) {
   const tmpPath = `${filePath}.${randomUUID()}.tmp`;
   const handle = await open(tmpPath, 'w', 0o600);
   try {

@@ -107,6 +107,11 @@
   font-weight: 700;
 }
 
+.side {
+  display: grid;
+  gap: var(--gutter);
+}
+
 .logo-preview {
   display: flex;
   align-items: center;

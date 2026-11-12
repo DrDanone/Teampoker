@@ -23,22 +23,23 @@ Vor jedem Commit müssen `npm test` und `npm run lint` grün sein. Die CI (`.git
 
 ## Aufbau
 
-| Pfad                      | Inhalt                                                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `server/index.js`         | Start: Konfiguration, Prüfung von `DATA_DIR`, Speicher laden                                                |
-| `server/config.js`        | Einstellungen aus Umgebungsvariablen, Prüfung beim Start                                                    |
-| `server/app.js`           | HTTP-Routing, Verwaltungs-Sperre, Logo-Auslieferung                                                         |
-| `server/ws.js`            | WebSocket `/ws`: Origin-Prüfung, Limits, Heartbeat                                                          |
-| `server/poker/`           | `hub.js` (Protokoll), `room-session.js` (Teilnehmer, Runde), `cards.js` (Kartenset, Auswertung), `names.js` |
-| `server/rooms/`           | Raum-Codes und `RoomStore` (`rooms.json`, atomisch geschrieben)                                             |
-| `server/admin/`           | Admin-API (`routes.js`), Sitzungen und zeitkonstanter Vergleich (`sessions.js`), CSRF                       |
-| `server/branding/logo.js` | Logo-Prüfung und -Speicherung                                                                               |
-| `server/network.js`       | `ADMIN_NETWORKS`, `TRUSTED_PROXIES`, echte Client-IP                                                        |
-| `server/security.js`      | CSP und weitere Sicherheits-Header                                                                          |
-| `public/`                 | Oberfläche ohne Build-Schritt; `theme.css` = GY-Utility-Tokens, `icons/` = Material Symbols                 |
-| `public/admin/`           | Verwaltung (`index.html`, `admin.js`, `admin.css`)                                                          |
-| `test/`                   | Tests; `helpers.js` startet einen Testserver, `ws-client.js` ist ein WebSocket-Testclient                   |
-| `docs/ZIMAOS.md`          | Installation, Cloudflare Tunnel, Update, Sicherung, Fehlersuche                                             |
+| Pfad                           | Inhalt                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `server/index.js`              | Start: Konfiguration, Prüfung von `DATA_DIR`, Speicher laden                                                |
+| `server/config.js`             | Einstellungen aus Umgebungsvariablen, Prüfung beim Start                                                    |
+| `server/app.js`                | HTTP-Routing, Verwaltungs-Sperre, Logo-Auslieferung, Seitenname ins HTML (`{{SITE_NAME}}`)                  |
+| `server/ws.js`                 | WebSocket `/ws`: Origin-Prüfung, Limits, Heartbeat                                                          |
+| `server/poker/`                | `hub.js` (Protokoll), `room-session.js` (Teilnehmer, Runde), `cards.js` (Kartenset, Auswertung), `names.js` |
+| `server/rooms/`                | Raum-Codes und `RoomStore` (`rooms.json`, atomisch geschrieben)                                             |
+| `server/admin/`                | Admin-API (`routes.js`), Sitzungen und zeitkonstanter Vergleich (`sessions.js`), CSRF                       |
+| `server/branding/logo.js`      | Logo-Prüfung und -Speicherung                                                                               |
+| `server/branding/site-name.js` | Seitenname (`site.json`): Prüfung und Speicherung                                                           |
+| `server/network.js`            | `ADMIN_NETWORKS`, `TRUSTED_PROXIES`, echte Client-IP                                                        |
+| `server/security.js`           | CSP und weitere Sicherheits-Header                                                                          |
+| `public/`                      | Oberfläche ohne Build-Schritt; `theme.css` = GY-Utility-Tokens, `icons/` = Material Symbols                 |
+| `public/admin/`                | Verwaltung (`index.html`, `admin.js`, `admin.css`)                                                          |
+| `test/`                        | Tests; `helpers.js` startet einen Testserver, `ws-client.js` ist ein WebSocket-Testclient                   |
+| `docs/ZIMAOS.md`               | Installation, Cloudflare Tunnel, Update, Sicherung, Fehlersuche                                             |
 
 Node.js 22 (LTS), **kein Web-Framework**, einzige Laufzeit-Abhängigkeit ist `ws`. Frontend ist reines HTML/CSS/JS. Neue Abhängigkeiten nur mit guter Begründung.
 
@@ -48,7 +49,7 @@ Node.js 22 (LTS), **kein Web-Framework**, einzige Laufzeit-Abhängigkeit ist `ws
 | ----------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
 | `ADMIN_PASSWORD`  | –             | Passwort des Superadmins, Pflicht, mind. 12 Zeichen. Ohne Passwort startet die App absichtlich nicht. |
 | `PORT`            | `3000`        | Port im Container                                                                                     |
-| `DATA_DIR`        | `./data`      | Räume und Logo; im Container `/data`                                                                  |
+| `DATA_DIR`        | `./data`      | Räume, Logo und Seitenname; im Container `/data`                                                      |
 | `PUBLIC_URL`      | –             | Öffentliche Adresse für Einladungslinks aus der Verwaltung, z. B. `https://poker.<domain>`            |
 | `ADMIN_NETWORKS`  | private Netze | Netze, aus denen `/admin/` direkt erreichbar ist; über Tunnel/Proxy nie. `*` = überall                |
 | `TRUSTED_PROXIES` | private Netze | Proxys/Tunnel, deren `CF-Connecting-IP` bzw. `X-Forwarded-For` als Client-Adresse gilt                |
@@ -58,13 +59,13 @@ Node.js 22 (LTS), **kein Web-Framework**, einzige Laufzeit-Abhängigkeit ist `ws
 Nicht ohne Rückfrage bei Markus ändern:
 
 - **Keine Ticket-Informationen** in der App – nur Schätzen; das Ticket wird mündlich angesagt.
-- **Superadmin** (Markus) verwaltet Räume (anlegen, umbenennen, löschen, Code neu erzeugen) und das Logo. Die Verwaltung `/admin/` ist **nur direkt im Heimnetz** erreichbar, über Tunnel/Proxy 404. Login mit `ADMIN_PASSWORD` (mind. 12 Zeichen). Einladungslinks aus der Verwaltung nutzen `PUBLIC_URL`.
+- **Superadmin** (Markus) verwaltet Räume (anlegen, umbenennen, löschen, Code neu erzeugen), das Logo und den Seitennamen (oben links und im Browser-Titel, Standard „Teampoker“, max. 40 Zeichen). Die Verwaltung `/admin/` ist **nur direkt im Heimnetz** erreichbar, über Tunnel/Proxy 404. Login mit `ADMIN_PASSWORD` (mind. 12 Zeichen). Einladungslinks aus der Verwaltung nutzen `PUBLIC_URL`.
 - **Raum-Code:** 8 Zeichen, Großbuchstaben und Ziffern ohne 0/O/1/I/L, kryptografischer Zufall, Eingabe ohne Beachtung der Groß-/Kleinschreibung; Einladungslink `/join/CODE`. Neuer Code macht den alten sofort ungültig.
 - **Teilnehmer** geben nur ihren Namen ein; Namen sind pro Raum eindeutig. Kein Zuschauer-Modus – wer aussetzt, nimmt die Kaffeekarte. Nach Neuladen kehrt man als dieselbe Person mit derselben Schätzung zurück; Offline-Teilnehmer werden ausgegraut und später entfernt.
 - **Karten:** 0, ½, 1, 2, 3, 5, 8, 13, 20, 40, 100, ?, Kaffee – „?“ und Kaffee nicht in der Statistik.
 - **Alle** dürfen aufdecken (nur per Klick, auch wenn noch nicht alle gewählt haben) und alle zurücksetzen; nach dem Aufdecken sind die Karten gesperrt. Vor dem Aufdecken sehen alle, **wer** gewählt hat, nicht **was**.
 - **Ergebnis:** Namen mit Werten, Durchschnitt, Median, Spanne; **alle** mit höchstem bzw. niedrigstem Wert markiert; Hinweis bei Einigkeit.
-- **Speicherung:** Schätzungen nur im Arbeitsspeicher; gespeichert werden nur Räume (`rooms.json`) und Logo in `/data`.
+- **Speicherung:** Schätzungen nur im Arbeitsspeicher; gespeichert werden nur Räume (`rooms.json`), Logo und Seitenname (`site.json`) in `/data`.
 - **Design GY Utility** (Design System in Claude): Purple `#951b81`, Deep Blue `#081950`, Lilac `#c8aee3`, Violet `#7832de`, Magenta `#d71482`, Sand `#d9d6d1`; Schrift Aptos (Fallback Segoe UI/Helvetica/Arial); flächig, abgerundet, keine Schatten, keine Verläufe; Material Symbols Weight 200, nicht gefüllt, lokal ausgeliefert. Deutsch, keine Emojis. Logo links oben statt Purple-Kurve (ohne Logo bleibt die Kurve). Keine Rundennummer – neben „Deine Karte“ steht, wie viele schon gewählt haben. Keine Fußzeile „by Wilken“. Muss auf Laptop und Smartphone funktionieren.
 
 ## Sicherheitsregeln
@@ -75,6 +76,7 @@ Diese Eigenschaften sind durch Tests abgesichert und dürfen nicht aufgeweicht w
 - Frontend: Texte nur über `textContent`, nie `innerHTML`/`eval`. **Keine Inline-Skripte, -Styles oder `on…`-Attribute** (CSP). Nichts von fremden Servern laden (DSGVO).
 - Jede WebSocket-Nachricht serverseitig validieren; Origin-Prüfung, Nachrichtengröße, Ratenlimit, Verbindungs- und Teilnehmerlimits bleiben.
 - Admin-API: Cookie `HttpOnly`/`SameSite=Strict` (`Secure` hinter HTTPS), CSRF-Token, Origin-Prüfung, zeitkonstanter Passwortvergleich, Sperre nach Fehlversuchen, Ablauf nach Inaktivität.
+- Seitenname: serverseitig bereinigt und begrenzt; der Server setzt ihn nur **HTML-maskiert** (`escapeHtml`) in die Seiten ein, das Frontend nur per `textContent`.
 - Logo: Format über Dateisignatur (PNG, JPG, WebP, SVG, max. 1 MB), gefährliche SVGs **ablehnen**, Auslieferung mit `nosniff` und CSP-`sandbox`.
 - **Keine verschachtelten Regexe auf Benutzereingaben** (ReDoS – ist schon einmal passiert).
 - Client-IP aus `CF-Connecting-IP`/`X-Forwarded-For` nur, wenn die Verbindung aus `TRUSTED_PROXIES` kommt.

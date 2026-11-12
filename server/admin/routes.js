@@ -9,6 +9,7 @@ import {
   sendJson,
 } from '../http.js';
 import { FailureLimiter } from '../ratelimit.js';
+import { SiteNameError } from '../branding/site-name.js';
 import { RoomError } from '../rooms/store.js';
 import { ABSOLUTE_TIMEOUT_MS, SESSION_COOKIE, SessionStore, safeEqual } from './sessions.js';
 
@@ -22,6 +23,7 @@ const ROOM_CODE_PATH = /^\/api\/admin\/rooms\/([A-Za-z0-9-]{1,64})\/code$/;
  * @param {object} options
  * @param {import('../rooms/store.js').RoomStore} options.rooms
  * @param {import('../branding/logo.js').LogoStore} options.logo
+ * @param {import('../branding/site-name.js').SiteNameStore} options.siteName
  * @param {string} options.adminPassword
  * @param {string} [options.publicUrl] öffentliche Adresse für Einladungslinks
  * @param {SessionStore} [options.sessions]
@@ -30,6 +32,7 @@ const ROOM_CODE_PATH = /^\/api\/admin\/rooms\/([A-Za-z0-9-]{1,64})\/code$/;
 export function createAdminApi({
   rooms,
   logo,
+  siteName,
   adminPassword,
   publicUrl = '',
   sessions = new SessionStore(),
@@ -44,7 +47,7 @@ export function createAdminApi({
     } catch (error) {
       if (error instanceof HttpError) {
         sendJson(res, error.status, { error: error.message }, error.headers);
-      } else if (error instanceof LogoError) {
+      } else if (error instanceof LogoError || error instanceof SiteNameError) {
         sendJson(res, 400, { error: error.message });
       } else if (error instanceof RoomError) {
         sendJson(res, error.code === 'not-found' ? 404 : 400, { error: error.message });
@@ -82,6 +85,14 @@ export function createAdminApi({
         return sendJson(res, 200, { logo: null });
       }
       throw methodNotAllowed('PUT, DELETE');
+    }
+
+    if (pathname === `${API_PREFIX}/name`) {
+      if (method !== 'PUT') throw methodNotAllowed('PUT');
+      requireCsrf(req, session);
+      const { name } = await readJson(req);
+      const saved = await siteName.save(name);
+      return sendJson(res, 200, { name: saved });
     }
 
     if (pathname === `${API_PREFIX}/rooms`) {
